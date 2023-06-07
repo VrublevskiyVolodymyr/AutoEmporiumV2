@@ -18,14 +18,15 @@ public class MailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendEmail(Advertisement advertisement,String email) {
+    public void sendEmail(String email, String subject, String body) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
 
         try {
             helper.setTo(email);
-            helper.setText("<h2> advertisement " + advertisement.toString() +  "is banned </h2>", true);
-            helper.setFrom(new InternetAddress("mr.java2022@gmail.com"));
+            helper.setSubject(subject);
+            helper.setText("<h2>" + body + "</h2>", true);
+            helper.setFrom(new InternetAddress("v637904@gmail.com"));
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }

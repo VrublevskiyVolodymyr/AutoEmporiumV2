@@ -80,8 +80,10 @@ public class AdvertisementService {
             int count = 3 - existingAdvertisement.getEditCount();
 
             if (count==0) {
-                String email = existingAdvertisement.getCreatedBy().getEmail();
-                mailService.sendEmail(existingAdvertisement, email);
+                String managerEmail = clientService.getManagerEmail();
+                String subject = "Notification from Autoemporium: AdvertisementService";
+                String body = "advertisement " + existingAdvertisement.toString() +  "is banned";
+                mailService.sendEmail(managerEmail, subject, body);
                 return new ResponseEntity<>("You massage id = " + id + " is banned, contact the administrator", HttpStatus.FORBIDDEN);
             }
 

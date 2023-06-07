@@ -34,6 +34,10 @@ public class Client implements UserDetails {
     @Column(unique = true)
     @JsonView(value = Views.Level3.class)
     private String email;
+
+    @Column(unique = true)
+    @JsonView(value = Views.Level3.class)
+    private String phoneNumber;
     @JsonView(value = {Views.Level1.class, Views.Level1.class})
     private String password;
 

@@ -41,6 +41,13 @@ public class Advertisement {
             inverseJoinColumns = @JoinColumn(name = "client_id")
     )
     private Client createdBy;
+
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinTable(name = "autodealer_adv",
+            joinColumns = @JoinColumn(name = "adv_id"),
+            inverseJoinColumns = @JoinColumn(name = "autodealer_id")
+    )
+    private AutoDealer createdByDealer;
     private int editCount;
 
 //    public void addAdvertisement() {

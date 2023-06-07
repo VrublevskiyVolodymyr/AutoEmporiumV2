@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
 @Entity
 public class Model {
     @Id
@@ -39,5 +38,13 @@ public class Model {
 
     public Model(String model) {
         this.model = model;
+    }
+
+    @Override
+    public String toString() {
+        return "Model{" +
+                "id=" + id +
+                ", model='" + model + '\'' +
+                '}';
     }
 }

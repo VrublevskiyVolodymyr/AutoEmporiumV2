@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/currency/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/producers/**").hasAnyAuthority("MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/producers/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/producer/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/model/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
                 .and()

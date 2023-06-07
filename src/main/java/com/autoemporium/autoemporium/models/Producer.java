@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
 @Entity
 
 public class Producer {
@@ -39,6 +38,14 @@ public class Producer {
 
     public Producer(String producer) {
         this.producer = producer;
+    }
+
+    @Override
+    public String toString() {
+        return "Producer{" +
+                "id=" + id +
+                ", producer='" + producer + '\'' +
+                '}';
     }
 }
 

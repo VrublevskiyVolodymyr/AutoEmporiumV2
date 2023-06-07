@@ -1,10 +1,7 @@
 package com.autoemporium.autoemporium.services;
 
 import com.autoemporium.autoemporium.dao.ClientDAO;
-import com.autoemporium.autoemporium.models.AccountType;
-import com.autoemporium.autoemporium.models.Client;
-import com.autoemporium.autoemporium.models.ClientDTO;
-import com.autoemporium.autoemporium.models.Status;
+import com.autoemporium.autoemporium.models.*;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.AllArgsConstructor;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 public class ClientService implements UserDetailsService {
@@ -31,7 +29,7 @@ public class ClientService implements UserDetailsService {
     private ClientDAO clientDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     public ClientService(ClientDAO clientDAO, PasswordEncoder passwordEncoder, @Lazy AuthenticationManager authenticationManager) {
         this.clientDAO = clientDAO;
@@ -45,6 +43,15 @@ public class ClientService implements UserDetailsService {
         Client byEmail = clientDAO.findByEmail(username);
         System.out.println(byEmail);
         return clientDAO.findByEmail(username);
+    }
+
+    public String getManagerEmail() {
+        List<Client> managerClients = clientDAO.findByRolesContaining(Role.MANAGER);
+        if (!((List<?>) managerClients).isEmpty()) {
+            Client managerClient = managerClients.get(0);
+            return managerClient.getEmail();
+        }
+        return null;
     }
     public void saveClient(@RequestBody ClientDTO clientDTO) {
         if (clientDTO == null) {
@@ -70,7 +77,6 @@ public class ClientService implements UserDetailsService {
                     .setSubject(authenticate.getName())
                     .signWith(SignatureAlgorithm.HS256, "okten".getBytes(StandardCharsets.UTF_8))
                     .compact();
-            System.out.println(jwtToken);
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Authorization", "Bearer " + jwtToken);

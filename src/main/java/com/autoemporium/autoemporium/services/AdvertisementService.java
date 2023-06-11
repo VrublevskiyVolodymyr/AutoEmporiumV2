@@ -1,25 +1,20 @@
 package com.autoemporium.autoemporium.services;
 
-import com.autoemporium.autoemporium.models.AccountType;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.autoemporium.autoemporium.models.Car;
+import com.autoemporium.autoemporium.models.users.AccountType;
 import com.autoemporium.autoemporium.dao.AdvertisementDAO;
-import com.autoemporium.autoemporium.dao.ClientDAO;
+import com.autoemporium.autoemporium.dao.SellerDAO;
 import com.autoemporium.autoemporium.models.Advertisement;
-import com.autoemporium.autoemporium.models.Client;
+import com.autoemporium.autoemporium.models.users.Seller;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -29,9 +24,9 @@ import java.util.List;
 public class AdvertisementService {
     private final List<String> bannedWords = Arrays.asList("bad", "offensive", "word");
     @Autowired
-    private ClientDAO clientDAO;
+    private SellerDAO sellerDAO;
     @Autowired
-    private ClientService clientService;
+    private UserService userService;
 
     @Autowired
     private AdvertisementDAO advertisementDAO;
@@ -42,7 +37,7 @@ public class AdvertisementService {
 
     public ResponseEntity<String> save(Advertisement advertisement, Principal principal) {
         String username = principal.getName();
-        Client seller = (Client) clientService.loadUserByUsername(username);
+        Seller seller = sellerDAO.findSellerByUsername(username);
         if (seller.getAccountType() == AccountType.BASIC && seller.getCountOfAds() >= 1) {
             return new ResponseEntity<>("You can only post one advertisement with a basic account.", HttpStatus.FORBIDDEN);
         } else if (containsBannedWords(advertisement.getTitle()) || containsBannedWords(advertisement.getDescription())) {
@@ -80,7 +75,7 @@ public class AdvertisementService {
             int count = 3 - existingAdvertisement.getEditCount();
 
             if (count==0) {
-                String managerEmail = clientService.getManagerEmail();
+                String managerEmail = userService.getManagerEmail();
                 String subject = "Notification from Autoemporium: AdvertisementService";
                 String body = "advertisement " + existingAdvertisement.toString() +  "is banned";
                 mailService.sendEmail(managerEmail, subject, body);
@@ -101,5 +96,17 @@ public class AdvertisementService {
 
     private boolean containsBannedWords(String text) {
         return bannedWords.stream().anyMatch(text::contains);
+    }
+
+    public ResponseEntity<List<Advertisement>> getAllAdvertisement() {
+
+        List<Advertisement> all = advertisementDAO.findAll();
+
+        return new ResponseEntity<>(all,HttpStatus.OK);
+    }
+
+    public ResponseEntity<Advertisement> getAdvertisementById(Integer id) {
+        Advertisement advertisement = advertisementDAO.findById(id).orElse(null);
+        return new ResponseEntity<>(advertisement,HttpStatus.OK);
     }
 }

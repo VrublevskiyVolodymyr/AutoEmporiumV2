@@ -2,7 +2,7 @@ package com.autoemporium.autoemporium.services;
 
 import com.autoemporium.autoemporium.dao.ModelDAO;
 import com.autoemporium.autoemporium.dao.ProducerDAO;
-import com.autoemporium.autoemporium.models.Client;
+import com.autoemporium.autoemporium.models.users.Seller;
 import com.autoemporium.autoemporium.models.Model;
 import com.autoemporium.autoemporium.models.Producer;
 import lombok.AllArgsConstructor;
@@ -11,27 +11,25 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class CarSalePlatformService {
+public class ManagerService {
 
     @Autowired
     private ProducerDAO producerDAO;
     private ModelDAO modelDAO;
     MailService mailService;
-    ClientService clientService;
+    UserService clientService;
 
     public ResponseEntity<String> notifyMissingProducer(String producer, Principal principal) {
         String username = principal.getName();
-        Client seller = (Client) clientService.loadUserByUsername(username);
+        Seller seller = (Seller) clientService.loadUserByUsername(username);
         Producer producer1 = producerDAO.findAll()
                 .stream()
                 .filter(producer2 -> Objects.equals(producer2.getProducer(), producer))
@@ -48,7 +46,7 @@ public class CarSalePlatformService {
     public ResponseEntity<String> notifyMissingModel( String model,  Integer producerId, Principal principal ) {
         Producer producer = producerDAO.findById(producerId).orElse(null);
         String username = principal.getName();
-        Client seller = (Client) clientService.loadUserByUsername(username);
+        Seller seller = (Seller) clientService.loadUserByUsername(username);
         if (producer == null) {
             return ResponseEntity.badRequest().body("Producer not found.");
         } else {

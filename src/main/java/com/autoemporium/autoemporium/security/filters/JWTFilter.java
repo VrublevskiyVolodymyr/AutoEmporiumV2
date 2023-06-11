@@ -1,7 +1,7 @@
 package com.autoemporium.autoemporium.security.filters;
 
-import com.autoemporium.autoemporium.dao.ClientDAO;
-import com.autoemporium.autoemporium.models.Client;
+import com.autoemporium.autoemporium.dao.UserDAO;
+import com.autoemporium.autoemporium.models.users.User;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,8 @@ import java.nio.charset.StandardCharsets;
 @AllArgsConstructor
 
 public class JWTFilter extends OncePerRequestFilter {
-    private ClientDAO clientDAO;
+//    private ClientDAO clientDAO;
+    private UserDAO userDAO;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -37,15 +38,15 @@ public class JWTFilter extends OncePerRequestFilter {
                     .getBody()
                     .getSubject();
             System.out.println("decodedData-" + decodedData);
-            Client client = clientDAO.findByEmail(decodedData);
-            System.out.println("client-" + client);
-            if (client != null) {
+            User user = userDAO.findByUsername(decodedData);
+            System.out.println("user-" + user);
+            if (user != null) {
                 SecurityContextHolder
                         .getContext()
                         .setAuthentication(new UsernamePasswordAuthenticationToken(
-                                client.getEmail(),
-                                client.getPassword(),
-                                client.getAuthorities()
+                                user.getUsername(),
+                                user.getPassword(),
+                                user.getAuthorities()
                         ));
             }
         }

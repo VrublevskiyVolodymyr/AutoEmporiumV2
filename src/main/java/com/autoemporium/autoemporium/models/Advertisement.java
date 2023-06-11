@@ -1,12 +1,11 @@
 package com.autoemporium.autoemporium.models;
 
-import com.autoemporium.autoemporium.views.Views;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.autoemporium.autoemporium.models.users.Seller;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,18 +34,20 @@ public class Advertisement {
     private LocalDateTime createdAt;
     private LocalDateTime editedAt;
 
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @JoinTable(name = "client_adv",
+    @JoinTable(name = "seller_adv",
             joinColumns = @JoinColumn(name = "adv_id"),
-            inverseJoinColumns = @JoinColumn(name = "client_id")
+            inverseJoinColumns = @JoinColumn(name = "seller_id")
     )
-    private Client createdBy;
+    private Seller createdBy;
 
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinTable(name = "autodealer_adv",
             joinColumns = @JoinColumn(name = "adv_id"),
             inverseJoinColumns = @JoinColumn(name = "autodealer_id")
     )
+    @JsonIgnore
     private AutoDealer createdByDealer;
     private int editCount;
 
@@ -62,7 +63,7 @@ public class Advertisement {
 //        // Code to retrieve the advertisement data from the database
 //        return this;
 //    }
-    public Advertisement(String title, String description,double price, int power,Client createdBy,Currency currency) {
+    public Advertisement(String title, String description, double price, int power, Seller createdBy, Currency currency) {
         this.title= title;
         this.description = description;
 //        this.car = car;

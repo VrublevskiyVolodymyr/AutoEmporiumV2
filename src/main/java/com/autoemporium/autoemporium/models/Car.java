@@ -20,9 +20,6 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(value = {Views.Level1.class})
     private int id;
-    @NotBlank(message = "model cannot be empty")
-    @Size(min = 2 ,max = 20, message = "model mast be from 2 to 20 chars")
-    @Pattern(regexp = "^[A-Za-z\s][A-Za-z0-9\s]*$", message = "model mast be [a-zA-Z_0-9]")
 
     @JsonView(value = {Views.Level1.class,Views.Level2.class,Views.Level3.class})
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

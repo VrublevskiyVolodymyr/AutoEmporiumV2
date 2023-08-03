@@ -19,12 +19,12 @@ public class ManagerController {
     ManagerService managerService;
 
 
-    @PostMapping("/producer/{producer}")
+    @PostMapping("/notify/producer/{producer}")
     public ResponseEntity<String> notifyMissingProducer(@PathVariable String producer, Principal principal) {
             return managerService.notifyMissingProducer(producer, principal);
     }
 
-    @PostMapping("/model/{producerId}/{model}")
+    @PostMapping("/notify/model/{producerId}/{model}")
     public ResponseEntity<String> notifyMissingModel(@PathVariable String model, @PathVariable Integer producerId,Principal principal) {
       return managerService.notifyMissingModel(model,producerId,principal);
     }
@@ -39,11 +39,7 @@ public class ManagerController {
     public ResponseEntity<String> saveProducer(@PathVariable String producer ) {
        return managerService.saveProducer(producer);
     }
-    @JsonView(value = Views.Level3.class)
-    @GetMapping("/producers/all")
-    public ResponseEntity<List<Producer>> getAllProducers() {
-        return  managerService.getAllProducers();
-    }
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/producers/{producerId}/models/save")
     public ResponseEntity<String> saveModels(@RequestBody List<Model> models, @PathVariable Integer producerId) {
@@ -54,10 +50,5 @@ public class ManagerController {
     @PostMapping("/producers/{producerId}/model/save")
     public ResponseEntity<String> saveModel(@RequestBody Model model, @PathVariable Integer producerId) {
        return managerService.saveModel(model,producerId);
-    }
-    @JsonView(value = Views.Level3.class)
-    @GetMapping("/producers/{producerId}/models/all")
-    public ResponseEntity<List<Model>> getAllModels(@PathVariable Integer producerId) {
-        return  managerService.getAllModels(producerId);
     }
 }

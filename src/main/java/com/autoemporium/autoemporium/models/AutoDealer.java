@@ -1,5 +1,6 @@
 package com.autoemporium.autoemporium.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class AutoDealer {
 
     private String managerPhone;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "autodealer_adv",
             joinColumns = @JoinColumn(name = "autodealer_id"),

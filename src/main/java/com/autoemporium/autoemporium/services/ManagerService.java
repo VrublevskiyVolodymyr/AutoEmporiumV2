@@ -2,6 +2,7 @@ package com.autoemporium.autoemporium.services;
 
 import com.autoemporium.autoemporium.dao.ModelDAO;
 import com.autoemporium.autoemporium.dao.ProducerDAO;
+import com.autoemporium.autoemporium.dao.SellerDAO;
 import com.autoemporium.autoemporium.models.users.Seller;
 import com.autoemporium.autoemporium.models.Model;
 import com.autoemporium.autoemporium.models.Producer;
@@ -21,15 +22,16 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ManagerService {
 
-    @Autowired
     private ProducerDAO producerDAO;
     private ModelDAO modelDAO;
+
+    private SellerDAO sellerDAO;
     MailService mailService;
-    UserService clientService;
+    UserService userService;
 
     public ResponseEntity<String> notifyMissingProducer(String producer, Principal principal) {
         String username = principal.getName();
-        Seller seller = (Seller) clientService.loadUserByUsername(username);
+        Seller seller = sellerDAO.findSellerByUsername(username);
         Producer producer1 = producerDAO.findAll()
                 .stream()
                 .filter(producer2 -> Objects.equals(producer2.getProducer(), producer))
@@ -46,11 +48,11 @@ public class ManagerService {
     public ResponseEntity<String> notifyMissingModel( String model,  Integer producerId, Principal principal ) {
         Producer producer = producerDAO.findById(producerId).orElse(null);
         String username = principal.getName();
-        Seller seller = (Seller) clientService.loadUserByUsername(username);
+        Seller seller = sellerDAO.findSellerByUsername(username);
         if (producer == null) {
             return ResponseEntity.badRequest().body("Producer not found.");
         } else {
-            List<Model> models = producer.getModel();
+            List<Model> models = producer.getModels();
             List<String> singleModels = models.stream().map(Model::getModel).toList();
             if (!singleModels.contains(model)) {
                notifyManager("Missing model: " + model + ". Said the seller id= " + seller.getId());
@@ -60,7 +62,6 @@ public class ManagerService {
             }
         }
     }
-
 
     public ResponseEntity<String> saveProducers(List<Producer> producers) {
         List<String> singleProducersDAO = producerDAO.findAll().stream().map(Producer::getProducer).toList();
@@ -87,35 +88,24 @@ public class ManagerService {
         }
     }
 
-    public ResponseEntity<List<Producer>> getAllProducers() {
-        List<Producer> all = producerDAO.findAll();
-        return new ResponseEntity<>(all, HttpStatus.OK);
-    }
-
     public ResponseEntity<String> saveModels(List<Model> models, Integer producerId) {
         Producer producer = producerDAO.findById(producerId).orElseThrow(() -> new IllegalArgumentException("Producer not found"));
         List<String> singleModels = models.stream().map(Model::getModel).toList();
-        List<String> singleModelsDAO = producer.getModel().stream().map(Model::getModel).toList();
+        List<String> singleModelsDAO = producer.getModels().stream().map(Model::getModel).toList();
         boolean containsElement = CollectionUtils.containsAny(singleModels, singleModelsDAO);
 
         if (containsElement) {
             return new ResponseEntity<>("One of models already exists", HttpStatus.FORBIDDEN);
         } else {
-            producer.setModel(models);
+            producer.setModels(models);
             producerDAO.save(producer);
             return new ResponseEntity<>("models is saved", HttpStatus.OK);
         }
     }
 
-    public ResponseEntity<List<Model>> getAllModels(Integer producerId) {
-        Producer producer = producerDAO.findById(producerId).orElseThrow(() -> new IllegalArgumentException("Producer not found"));
-        List<Model> models = producer.getModel();
-        return new ResponseEntity<>(models, HttpStatus.OK);
-    }
-
     public ResponseEntity<String> saveModel(Model model, Integer producerId) {
         Producer producer = producerDAO.findById(producerId).orElseThrow(() -> new IllegalArgumentException("Producer not found"));
-        List<Model> models = producer.getModel();
+        List<Model> models = producer.getModels();
         List<String> singleModels = models.stream().map(Model::getModel).toList();
         String singleModel = model.getModel();
 
@@ -128,8 +118,7 @@ public class ManagerService {
         }
     }
     public void notifyManager(String message) {
-
-        String managerEmail = clientService.getManagerEmail();
+        String managerEmail = userService.getManagerEmail();
         String subject = "Notification from Autoemporium: CarSalePlatformService";
         String body = "Notification: " + message;
 

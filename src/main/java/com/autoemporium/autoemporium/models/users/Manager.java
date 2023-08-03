@@ -3,6 +3,7 @@ package com.autoemporium.autoemporium.models.users;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class Manager {
     private String lastName;
 
     @JsonView(value = Views.Level1.class)
+    @Column(unique = true)
     private String phone;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

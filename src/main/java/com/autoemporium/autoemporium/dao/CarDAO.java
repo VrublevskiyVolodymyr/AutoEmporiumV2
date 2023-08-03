@@ -16,11 +16,11 @@ public interface CarDAO extends JpaRepository<Car, Integer>, JpaSpecificationExe
     @Query("select c from Car c where c.power=:value")
     List<Car> getCarsByPower(@Param("value") int value);
 
-    @Query("select distinct c.producer from Car c")
-    List<String> findDistinctProducers();
+//    @Query("select distinct c.producer from Car c")
+//    List<String> findDistinctProducers();
 
-    @Query("select distinct c.model from Car c where  c.producer = :producer")
-    List<String> findDistinctModelsByProducer(@Param("producer") String producer);
+//    @Query("select distinct c.model from Car c where  c.producer = :producer")
+//    List<String> findDistinctModelsByProducer(@Param("producer") String producer);
     List<Car> findByProducer(String value);
 
     List<Car> findByPower(int power);

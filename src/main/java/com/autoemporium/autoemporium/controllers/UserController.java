@@ -7,12 +7,14 @@ import com.autoemporium.autoemporium.models.users.*;
 import com.autoemporium.autoemporium.services.UserService;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @AllArgsConstructor
@@ -24,22 +26,22 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/admin/save")
-    public void saveAdmin(@RequestBody AdministratorDTO administratorDTO) {
+    public void saveAdmin(@RequestBody @Valid AdministratorDTO administratorDTO) {
         userService.saveAdmin(administratorDTO);
     }
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/owner/save")
-    public ResponseEntity<String> saveOwner(@RequestBody AdministratorDTO administratorDTO) {
+    public ResponseEntity<String> saveOwner(@RequestBody @Valid AdministratorDTO administratorDTO) {
       return userService.saveOwner(administratorDTO);
     }
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/manager/save")
-    public void saveManager(@RequestBody ManagerDTO managerDTO) {
+    public void saveManager(@RequestBody @Valid ManagerDTO managerDTO) {
         userService.saveManager(managerDTO);
     }
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/buyers/save")
-    public void saveBuyer(@RequestBody BuyerDTO buyerDTO) {
+    public void saveBuyer(@RequestBody @Valid BuyerDTO buyerDTO) {
         userService.saveBuyer(buyerDTO);
     }
 
@@ -95,8 +97,8 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/sellers/save")
-    public void saveSeller(@RequestBody SellerDTO sellerDTO) {
-        userService.saveSeller(sellerDTO);
+    public ResponseEntity<String> saveSeller(@RequestBody @Valid SellerDTO sellerDTO) {
+      return   userService.saveSeller(sellerDTO);
     }
 
     @ResponseStatus(HttpStatus.OK)

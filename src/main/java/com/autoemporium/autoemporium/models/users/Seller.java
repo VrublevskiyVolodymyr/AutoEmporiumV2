@@ -2,8 +2,10 @@ package com.autoemporium.autoemporium.models.users;
 
 import com.autoemporium.autoemporium.models.Advertisement;
 import com.autoemporium.autoemporium.views.Views;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 
@@ -11,20 +13,23 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
-@Getter
+@Data
 @Entity
-@ToString
 public class Seller {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(value = Views.Level1.class)
     private int id;
+
+    @NotBlank(message = "firstName cannot be empty")
     private String firstName;
+
+    @NotBlank(message = "lastName cannot be empty")
     private String lastName;
 
     @Column(unique = true)
     @JsonView(value = Views.Level3.class)
+    @NotBlank(message = "phoneNumber cannot be empty")
     private String phone;
 
     @Enumerated(EnumType.STRING)
@@ -43,7 +48,7 @@ public class Seller {
     @JsonView(value = Views.Level1.class)
     private User user;
 
-
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "seller_adv",
             joinColumns = @JoinColumn(name = "seller_id"),

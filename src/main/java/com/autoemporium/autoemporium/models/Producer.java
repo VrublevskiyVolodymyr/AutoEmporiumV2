@@ -20,13 +20,6 @@ public class Producer {
     private int id;
     @JsonView(value = {Views.Level1.class,Views.Level2.class,Views.Level3.class})
     private String producer;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "car_producer",
-            joinColumns = @JoinColumn(name = "producer_id"),
-            inverseJoinColumns = @JoinColumn(name = "car_id")
-    )
-    @JsonView(value = Views.Level1.class)
-    private Car car;
 
     @JsonView(value = Views.Level1.class)
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -34,7 +27,7 @@ public class Producer {
             joinColumns = @JoinColumn(name = "producer_id"),
             inverseJoinColumns = @JoinColumn(name = "model_id")
     )
-    private List<Model> model;
+    private List<Model> models;
 
     public Producer(String producer) {
         this.producer = producer;

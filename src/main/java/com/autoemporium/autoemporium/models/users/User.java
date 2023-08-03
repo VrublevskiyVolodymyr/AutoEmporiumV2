@@ -3,6 +3,7 @@ package com.autoemporium.autoemporium.models.users;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +30,7 @@ public class User implements UserDetails {
     @JsonView(value = Views.Level3.class)
     private String username;
 
+    @NotBlank(message = "password cannot be empty")
     @JsonView(value = {Views.Level1.class, Views.Level3.class})
     private String password;
 
@@ -37,25 +39,33 @@ public class User implements UserDetails {
     @JsonView(value = Views.Level1.class)
     private List<Role> roles;
 
+    private Boolean status;
+
 //    @OneToOne(cascade = CascadeType.ALL, mappedBy = "buyer")
 //    private Buyer buyer;
+
+    public User(String username, String password, List<Role> roles, Boolean status) {
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+        this.status=status;
+    }
 
     public User(String username, String password, List<Role> roles) {
         this.username = username;
         this.password = password;
         this.roles = roles;
     }
+
     public User(UserDetails loadUserByUsername) {
     }
 
     @Override
-    @JsonView(value = Views.Level1.class)
     public String getUsername() {
         return this.username;
     }
 
     @Override
-    @JsonView(value = Views.Level1.class)
     public String getPassword() {
         return this.password;
     }
@@ -74,7 +84,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return this.status;
     }
 
     @Override

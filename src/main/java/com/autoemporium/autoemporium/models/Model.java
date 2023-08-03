@@ -22,13 +22,6 @@ public class Model {
 
     @JsonView(value = Views.Level1.class)
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "car_model",
-            joinColumns = @JoinColumn(name = "model_id"),
-            inverseJoinColumns = @JoinColumn(name = "car_id")
-    )
-    private Car car;
-    @JsonView(value = Views.Level1.class)
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "producer_model",
             joinColumns = @JoinColumn(name = "model_id"),
             inverseJoinColumns = @JoinColumn(name = "producer_id")

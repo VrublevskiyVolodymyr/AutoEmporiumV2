@@ -1,14 +1,19 @@
 package com.autoemporium.autoemporium.services;
 
 import com.autoemporium.autoemporium.dao.CarDAO;
-import com.autoemporium.autoemporium.models.Car;
-import com.autoemporium.autoemporium.models.Model;
-import com.autoemporium.autoemporium.models.Producer;
+import com.autoemporium.autoemporium.dao.ProducerDAO;
+import com.autoemporium.autoemporium.dao.SellerDAO;
+import com.autoemporium.autoemporium.dao.UserDAO;
+import com.autoemporium.autoemporium.models.*;
+import com.autoemporium.autoemporium.models.users.Role;
+import com.autoemporium.autoemporium.models.users.Seller;
+import com.autoemporium.autoemporium.models.users.User;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -24,15 +32,39 @@ import java.util.List;
 @AllArgsConstructor
 public class CarService {
     private CarDAO carDAO;
+    private SellerDAO sellerDAO;
+    private ProducerDAO producerDAO;
+    private UserDAO userDAO;
 
-    public void save(Car car) {
-        if (car == null) {
+
+    public ResponseEntity<String> save(CarDTO carDTO, Principal principal) {
+        if (carDTO == null) {
             throw new RuntimeException();
         }
-        carDAO.save(car);
+        String username = principal.getName();
+        Seller seller = sellerDAO.findSellerByUsername(username);
+        int sellerId = seller.getId();
+        int producerId = (carDTO.getProducerId());
+        String producer = getProducerById(producerId).getBody();
+        String model = getModelByIdByProducerId(carDTO.getProducerId(), carDTO.getModelId()).getBody();
+        Car car = new Car();
+        car.setProducer(producer);
+        car.setModel(model);
+        car.setColor(carDTO.getColor());
+        car.setYear(carDTO.getYear());
+        car.setPower(carDTO.getPower());
+        car.setMileage(carDTO.getMileage());
+        car.setNumberDoors(carDTO.getNumberDoors());
+        car.setNumberSeats(carDTO.getNumberSeats());
+        car.setPhoto(carDTO.getPhoto());
+        car.setCreatedBySellerId(sellerId);
+        Car savedCar = carDAO.save(car);
+        int id = savedCar.getId();
+        return new ResponseEntity<>("You car id = " + id, HttpStatus.OK);
     }
+
     public ResponseEntity<List<Car>> getAllCars() {
-        Sort by = Sort.by(Sort.Order.desc("id"));
+        Sort by = Sort.by(Sort.Order.asc("id"));
         return new ResponseEntity<>(carDAO.findAll(by), HttpStatus.OK);
     }
 
@@ -49,28 +81,111 @@ public class CarService {
         return new ResponseEntity<>(car, HttpStatus.OK);
     }
 
-    public void deleteCar(int id) {
+    public ResponseEntity<List<Producer>> getAllProducers() {
+        List<Producer> all = producerDAO.findAll();
+        return new ResponseEntity<>(all, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Model>> getAllModels(Integer producerId) {
+        Producer producer = producerDAO.findById(producerId).orElseThrow(() -> new IllegalArgumentException("Producer not found"));
+        List<Model> models = producer.getModels();
+        return new ResponseEntity<>(models, HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> getProducerById(Integer id) {
+        String producer = producerDAO.findById(id).map(Producer::getProducer).orElse(null);
+        return new ResponseEntity<>(producer, HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> getModelByIdByProducerId(Integer producerId, Integer modelId) {
+        String model = producerDAO.findById(producerId).orElse(null).getModels().stream().filter(model1 -> model1.getId() == modelId).findFirst().map(Model::getModel).orElse(null);
+        return new ResponseEntity<>(model, HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> deleteCarById(int id, Principal principal) {
         if (id > 0) {
-            carDAO.deleteById(id);
+            String username = principal.getName();
+            Car c = carDAO.findById(id).orElse(null);
+            if (c == null) {
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+            }
+
+            User user = userDAO.findByUsername(username);
+
+            Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+            boolean isSeller = false;
+            boolean isAdmin = false;
+
+            for (GrantedAuthority authority : authorities) {
+                String authorityName = authority.getAuthority();
+                if ("SELLER".equals(authorityName)) {
+                    isSeller = true;
+                    break;
+                }
+                if ("ADMIN".equals(authorityName) || "MANAGER".equals(authorityName)) {
+                    isAdmin = true;
+                    break;
+                }
+            }
+
+            if (isAdmin || (isSeller && c.getCreatedBySellerId() == sellerDAO.findSellerByUsername(username).getId())) {
+                carDAO.delete(c);
+                return new ResponseEntity<>("Car is deleted", HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>("You cannot delete this car", HttpStatus.FORBIDDEN);
         }
+        return new ResponseEntity<>(" Car id < 0)", HttpStatus.FORBIDDEN);
     }
+//    public  ResponseEntity<String>  deleteCarByModel(String model, Principal principal) {
+//        carDAO.deleteCarByModel(model);
+//    }
 
-    public void deleteCarByModel(String model) {
-        carDAO.deleteCarByModel(model);
-    }
+    public ResponseEntity<String> updateCar(int id, CarDTO carDTO, Principal principal) {
 
-    public ResponseEntity<Car> updateCar(int id, Car car) {
-        Car c = carDAO.findById(id).get();
-        c.setModel(car.getModel());
-        c.setProducer(car.getProducer());
-        c.setPower(car.getPower());
-        c.setYear(car.getYear());
-        c.setColor(car.getColor());
-        c.setNumberDoors(car.getNumberDoors());
-        c.setNumberSeats(car.getNumberSeats());
-        carDAO.save(c);
-        return new ResponseEntity<>(c,HttpStatus.OK);
-    }
+        String username = principal.getName();
+        Car c = carDAO.findById(id).orElse(null);
+        if (c == null) {
+            return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+        }
+
+        String producer = getProducerById(carDTO.getProducerId()).getBody();
+        String model = getModelByIdByProducerId(carDTO.getProducerId(), carDTO.getModelId()).getBody();
+
+        c.setModel(model);
+        c.setProducer(producer);
+        c.setPower(carDTO.getPower());
+        c.setYear(carDTO.getYear());
+        c.setColor(carDTO.getColor());
+        c.setMileage(carDTO.getMileage());
+        c.setNumberDoors(carDTO.getNumberDoors());
+        c.setNumberSeats(carDTO.getNumberSeats());
+
+        User user = userDAO.findByUsername(username);
+
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+        boolean isSeller = false;
+        boolean isAdmin = false;
+
+        for (GrantedAuthority authority : authorities) {
+            String authorityName = authority.getAuthority();
+            if ("SELLER".equals(authorityName)) {
+                isSeller = true;
+                break;
+            }
+            if ("ADMIN".equals(authorityName) || "MANAGER".equals(authorityName)) {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        if (isAdmin || (isSeller && c.getCreatedBySellerId() == sellerDAO.findSellerByUsername(username).getId())) {
+            carDAO.save(c);
+            return new ResponseEntity<>("Car is updated", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("You cannot update this car", HttpStatus.FORBIDDEN);
+}
 
     public ResponseEntity<List<Car>> getCarsByPower(@PathVariable int value) {
         return new ResponseEntity<>(carDAO.getCarsByPower(value), HttpStatus.OK);
@@ -78,33 +193,55 @@ public class CarService {
 //        return carDAO.findByPower(value);
     }
 
-    public ResponseEntity<List<Car>> getCarByProducer(@PathVariable String value) {
-        return new ResponseEntity<>(carDAO.findByProducer(value), HttpStatus.OK);
-    }
-    public ResponseEntity<List<String>> getAllProducers() {
-        return new ResponseEntity<>(carDAO.findDistinctProducers(), HttpStatus.OK);
+    public ResponseEntity<List<Car>> getCarsByProducer(@PathVariable Integer id) {
+        String producer = getProducerById(id).getBody();
+        return new ResponseEntity<>(carDAO.findByProducer(producer), HttpStatus.OK);
     }
 
-    public ResponseEntity<List<String>> getAllModelsByProducer(@PathVariable String value) {
-        return new ResponseEntity<>(carDAO.findDistinctModelsByProducer(value), HttpStatus.OK);
+    public ResponseEntity<String> saveWithPhotos(int producerId, int modelId,  int power, MultipartFile[] photos, int year, String color, int mileage,
+             int numberDoors, int numberSeats, Principal principal
+    ) throws IOException {
+        String username = principal.getName();
+        Seller seller = sellerDAO.findSellerByUsername(username);
+        int sellerId = seller.getId();
+        String producer = getProducerById(producerId).getBody();
+        String model = getModelByIdByProducerId(producerId, modelId).getBody();
+
+        Car car = new Car(producer,model,power,year,color,mileage,numberDoors,numberSeats);
+        car.setCreatedBySellerId(sellerId);
+
+        List<String> photoPaths = new ArrayList<>();
+
+        for (MultipartFile photo : photos) {
+            String originalFilename = photo.getOriginalFilename();
+            String photoPath = "/photo/" + originalFilename;
+            photoPaths.add(photoPath);
+            String path = System.getProperty("user.home") + File.separator + "images" + File.separator + originalFilename;
+            File file = new File(path);
+            photo.transferTo(file);
+        }
+
+        car.setPhoto(photoPaths);
+        Car savedCar = carDAO.save(car);
+        int id = savedCar.getId();
+        return new ResponseEntity<>("You car id = " + id, HttpStatus.OK);
     }
 
-    public void saveWithPhoto(
-            @RequestParam Model model,
-            @RequestParam Producer producer,
-            @RequestParam int power,
-            @RequestParam MultipartFile photo,
-            @RequestParam int year,
-            @RequestParam String color,
-            @RequestParam int numberDoors,
-            @RequestParam int numberSeats
 
-    ) throws IOException {Car car = new Car(model, producer, power, year, color, numberDoors, numberSeats);
-        String originalFilename = photo.getOriginalFilename();
-        car.setPhoto("/photo/" + originalFilename);
-        String path = System.getProperty("user.home") + File.separator + "images" + File.separator + originalFilename;
-        File file = new File(path);
-        photo.transferTo(file);
+    public void savePhotoToCarId(int id, MultipartFile[] photos) throws IOException {
+        Car car = getCar(id).getBody();
+        assert car != null;
+        List<String> photoPaths = new ArrayList<>();
+        for (MultipartFile photo : photos) {
+            String originalFilename = photo.getOriginalFilename();
+            String photoPath = "/photo/" + originalFilename;
+            photoPaths.add(photoPath);
+            String path = System.getProperty("user.home") + File.separator + "images" + File.separator + originalFilename;
+            File file = new File(path);
+            photo.transferTo(file);
+        }
+
+        car.getPhoto().addAll(photoPaths);
         carDAO.save(car);
     }
 }

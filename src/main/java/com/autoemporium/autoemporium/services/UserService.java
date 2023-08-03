@@ -4,6 +4,7 @@ import com.autoemporium.autoemporium.dao.*;
 import com.autoemporium.autoemporium.models.users.*;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,33 +22,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @Service
+@AllArgsConstructor
 public class UserService implements UserDetailsService {
-    @Autowired
+
     private SellerDAO sellerDAO;
-    @Autowired
+
     private UserDAO userDAO;
-    @Autowired
+
     private OwnerDAO ownerDAO;
-    @Autowired
+
     private BuyerDAO buyerDAO;
-    @Autowired
+
     private ManagerDAO managerDAO;
-    @Autowired
+
     private AdministratorDAO administratorDAO;
-    @Autowired
+
     private PasswordEncoder passwordEncoder;
+
     private final AuthenticationManager authenticationManager;
 
+//    public UserService(SellerDAO sellerDAO, UserDAO userDAO, OwnerDAO ownerDAO, BuyerDAO buyerDAO, ManagerDAO managerDAO, AdministratorDAO administratorDAO, PasswordEncoder passwordEncoder, @Lazy AuthenticationManager authenticationManager) {
+//        this.sellerDAO = sellerDAO;
+//        this.userDAO = userDAO;
+//        this.ownerDAO = ownerDAO;
+//        this.buyerDAO = buyerDAO;
+//        this.managerDAO = managerDAO;
+//        this.administratorDAO = administratorDAO;
+//        this.passwordEncoder = passwordEncoder;
+//        this.authenticationManager = authenticationManager;
+//    }
 
-    public UserService(UserDAO userDAO, PasswordEncoder passwordEncoder, @Lazy AuthenticationManager authenticationManager) {
-        this.userDAO = userDAO;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -71,32 +84,56 @@ public class UserService implements UserDetailsService {
 //            return managerClient.getUsername();
 //        }
 //        return null;
-        String managerEmail = managerDAO.findAll().stream().findFirst().map(Manager::getUser).map(User::getUsername).toString();
+        String managerEmail = managerDAO.findAll().stream().findFirst().map(Manager::getUser).map(User::getUsername).orElse(null);;
         if (!(managerEmail == null)) {
             return managerEmail;
         }
         return null;
     }
 
-    public void saveSeller(@RequestBody SellerDTO sellerDTO) {
+    public ResponseEntity<String> saveSeller(@RequestBody SellerDTO sellerDTO) {
         if (sellerDTO == null) {
             throw new RuntimeException();
         }
-        Seller seller = new Seller();
-        seller.setFirstName(sellerDTO.getFirstname());
-        seller.setLastName(sellerDTO.getLastname());
-        seller.setStatus(Status.ACTIVE);
-        seller.setUser(new User(sellerDTO.getUsername(), passwordEncoder.encode(sellerDTO.getPassword()), List.of(Role.SELLER)));
-        sellerDAO.save(seller);
+        String username = sellerDTO.getUsername();
+        User user = userDAO.findByUsername(username);
+        if (user != null) {
+            List<String> authorities = loadUserByUsername(username).getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+            if (!authorities.contains("SELLER")) {
+                Seller seller = new Seller();
+                seller.setFirstName(sellerDTO.getUserFirstname());
+                seller.setLastName(sellerDTO.getUserLastname());
+                seller.setPhone(sellerDTO.getPhoneNumber());
+                seller.setStatus(Status.ACTIVE);
+                user.getRoles().add(Role.SELLER);
+                if ((authorities.contains("MANAGER"))||(authorities.contains("ADMIN"))) {
+                seller.setAccountType(AccountType.PREMIUM);
+                }
+                seller.setUser(user);
+                sellerDAO.save(seller);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+        } else {
+            Seller seller = new Seller();
+            seller.setFirstName(sellerDTO.getUserFirstname());
+            seller.setLastName(sellerDTO.getUserLastname());
+            seller.setPhone(sellerDTO.getPhoneNumber());
+            seller.setStatus(Status.ACTIVE);
+            seller.setUser(new User(sellerDTO.getUsername(), passwordEncoder.encode(sellerDTO.getPassword()), List.of(Role.SELLER), true));
+            sellerDAO.save(seller);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+
+        return new ResponseEntity<>("Seller is already exist", HttpStatus.FORBIDDEN);
     }
 
     public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
-
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword());
-        System.out.println(usernamePasswordAuthenticationToken);
         Authentication authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        System.out.println(authenticate);
+
         if (authenticate != null) {
             String jwtToken = Jwts.builder()
                     .setSubject(authenticate.getName())
@@ -115,7 +152,7 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException();
         }
         Buyer buyer = new Buyer();
-        buyer.setUser(new User(buyerDTO.getUsername(), passwordEncoder.encode(buyerDTO.getPassword()), List.of(Role.BUYER)));
+        buyer.setUser(new User(buyerDTO.getUsername(), passwordEncoder.encode(buyerDTO.getPassword()), List.of(Role.BUYER),true));
         buyer.setStatus(Status.ACTIVE);
         buyerDAO.save(buyer);
     }
@@ -145,35 +182,38 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException();
         }
         Manager manager = new Manager();
-        manager.setUser(new User(managerDTO.getUsername(), passwordEncoder.encode(managerDTO.getPassword()), List.of(Role.MANAGER)));
-        manager.setFirstName(managerDTO.getFirstname());
-        manager.setLastName(managerDTO.getLastname());
-        manager.setPhone(managerDTO.getPhone());
+        manager.setUser(new User(managerDTO.getUsername(), passwordEncoder.encode(managerDTO.getPassword()), List.of(Role.MANAGER),true));
+        manager.setFirstName(managerDTO.getUserFirstname());
+        manager.setLastName(managerDTO.getUserLastname());
+        manager.setPhone(managerDTO.getPhoneNumber());
         managerDAO.save(manager);
     }
+
 
     public void saveAdmin(AdministratorDTO administratorDTO) {
         if (administratorDTO == null) {
             throw new RuntimeException();
         }
         Administrator administrator = new Administrator();
-        administrator.setUser(new User(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()), List.of(Role.ADMIN)));
+        administrator.setUser(new User(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()), List.of(Role.ADMIN),true));
         administratorDAO.save(administrator);
     }
+
 
     public ResponseEntity<List<Manager>> getAllManagers() {
         return new ResponseEntity<>(managerDAO.findAll(), HttpStatus.OK);
     }
+
 
     public ResponseEntity<String> saveOwner(AdministratorDTO administratorDTO) {
         if (administratorDTO == null) {
             throw new RuntimeException();
         }
         Owner owner1 = ownerDAO.findAll().stream().findFirst().orElse(null);
-        if(owner1 == null){
-        Owner owner = Owner.getInstance(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()));
-        ownerDAO.save(owner);
-        return new ResponseEntity<>("Owner is saved :)", HttpStatus.CREATED);
+        if (owner1 == null) {
+            Owner owner = Owner.getInstance(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()));
+            ownerDAO.save(owner);
+            return new ResponseEntity<>("Owner is saved :)", HttpStatus.CREATED);
         }
         return new ResponseEntity<>("Owner already exists, you cannot create an Owner", HttpStatus.FORBIDDEN);
     }
@@ -182,14 +222,16 @@ public class UserService implements UserDetailsService {
         return new ResponseEntity<>(administratorDAO.findAll(), HttpStatus.OK);
     }
 
-    public void changeSellerStatus(Integer id,Integer statusId) {
+    public void changeSellerStatus(Integer id, Integer statusId) {
         Seller seller = sellerDAO.findById(id).orElse(null);
 
-        if (seller != null & statusId > 0 & statusId<=2 ) {
+        if (seller != null & statusId > 0 & statusId <= 2) {
             if (statusId == 1) {
                 seller.setStatus(Status.ACTIVE);
+                seller.getUser().setStatus(true);
             } else {
                 seller.setStatus(Status.BANNED);
+                seller.getUser().setStatus(false);
             }
             sellerDAO.save(seller);
         }
@@ -198,13 +240,16 @@ public class UserService implements UserDetailsService {
     public void changeBuyerStatus(Integer id, Integer statusId) {
         Buyer buyer = buyerDAO.findById(id).orElse(null);
 
-        if (buyer != null & statusId > 0 & statusId<=2 ) {
+        if (buyer != null & statusId > 0 & statusId <= 2) {
             if (statusId == 1) {
                 buyer.setStatus(Status.ACTIVE);
+                buyer.getUser().setStatus(true);
             } else {
                 buyer.setStatus(Status.BANNED);
+               buyer.getUser().setStatus(false);
+
             }
-            buyerDAO.save(buyer);
+           buyerDAO.save(buyer);
         }
     }
 }

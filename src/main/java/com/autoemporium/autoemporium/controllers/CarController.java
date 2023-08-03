@@ -4,6 +4,7 @@ package com.autoemporium.autoemporium.controllers;
 
 import com.autoemporium.autoemporium.dao.CarDAO;
 import com.autoemporium.autoemporium.models.Car;
+import com.autoemporium.autoemporium.models.CarDTO;
 import com.autoemporium.autoemporium.models.Model;
 import com.autoemporium.autoemporium.models.Producer;
 import com.autoemporium.autoemporium.queryFilters.CarSpecifications;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import java.security.Principal;
 import java.util.List;
 
 
@@ -37,13 +39,22 @@ public class CarController {
 
     @GetMapping("/cars")
     @JsonView(value = Views.Level3.class)
+    public ResponseEntity<List<Car>> getCars() {
+        return carService.getAllCars();
+    }
+
+    @GetMapping("managers/cars")
+    @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<Car>> getAllCars() {
         return carService.getAllCars();
     }
 
-    @GetMapping("/cars/withSpecifications/{model}/{producer}/{power}")
+    @GetMapping("/cars/withSpecifications/{producerId}/{modelId}/{power}")
     @JsonView(value = Views.Level1.class)
-    public ResponseEntity<List<Car>> getCar(@PathVariable String model, @PathVariable String producer, @PathVariable int power) {
+    public ResponseEntity<List<Car>> getCar(@PathVariable Integer modelId, @PathVariable Integer producerId, @PathVariable int power) {
+        String producer = getProducerById(producerId).getBody();
+        String model = getModelByIdByProducerId(producerId, modelId).getBody();
+
         return carService.findAllWithSpecifications(
                 CarSpecifications.byModel(model)
                         .and(CarSpecifications.byProducer(producer))
@@ -55,28 +66,47 @@ public class CarController {
     public ResponseEntity<Car> getCars(@PathVariable int id) {
         return carService.getCar(id);
     }
-
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/producers/all")
+    public ResponseEntity<List<Producer>> getAllProducers() {
+        return  carService.getAllProducers();
+    }
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/producer/{id}")
+    public ResponseEntity<String> getProducerById(@PathVariable Integer id) {
+        return  carService.getProducerById(id);
+    }
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/producer/{producerId}/model/{modelId}")
+    public ResponseEntity<String> getModelByIdByProducerId(@PathVariable Integer producerId, @PathVariable Integer modelId) {
+        return carService.getModelByIdByProducerId(producerId, modelId);
+    }
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/producers/{producerId}/models/all")
+    public ResponseEntity<List<Model>> getAllModels(@PathVariable Integer producerId) {
+        return  carService.getAllModels(producerId);
+    }
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/cars")
-    public void save(@RequestBody @Valid Car car) {
-        carService.save(car);
+    public ResponseEntity<String> save(@RequestBody  @Valid CarDTO carDTO, Principal principal) {
+       return carService.save(carDTO, principal);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/cars/{id}")
-    public void deleteCar(@PathVariable int id) {
-        carService.deleteCar(id);
+    public  ResponseEntity<String>  deleteCarById(@PathVariable int id, Principal principal) {
+       return carService.deleteCarById(id, principal);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @DeleteMapping("/cars/model/{model}")
-    public void deleteCarByModel(@PathVariable String model) {
-        carService.deleteCarByModel(model);
-    }
+//    @ResponseStatus(HttpStatus.OK)
+//    @DeleteMapping("/cars/model/{model}")
+//    public  ResponseEntity<String> deleteCarByModel(@PathVariable String model, Principal principal) {
+//       return carService.deleteCarByModel(model,principal);
+//    }
 
     @PatchMapping("/cars/{id}")
-    public ResponseEntity<Car> updateCar(@PathVariable int id, @RequestBody Car car) {
-        return carService.updateCar(id, car);
+    public ResponseEntity<String> updateCar(@PathVariable int id, @RequestBody CarDTO carDTO, Principal principal) {
+        return carService.updateCar(id, carDTO, principal);
     }
 
     @GetMapping("/cars/power/{value}")
@@ -87,30 +117,33 @@ public class CarController {
 //        return carDAO.findByPower(value);
     }
 
-    @GetMapping("/cars/producer/{value}")
+    @GetMapping("/cars/producer/{id}")
     @JsonView(value = Views.Level2.class)
-    public ResponseEntity<List<Car>> getCarByProducer(@PathVariable String value) {
-        return carService.getCarByProducer(value);
+    public ResponseEntity<List<Car>> getCarsByProducer(@PathVariable Integer id) {
+        return carService.getCarsByProducer(id);
     }
 
-    @GetMapping("/cars/producers")
-    @JsonView(value = Views.Level2.class)
-    public ResponseEntity<List<String>> getAllByProducers() {
-        return carService.getAllProducers();
-    }
 
-    @GetMapping("/cars/models/producer/{value}")
-    @JsonView(value = Views.Level2.class)
-    public ResponseEntity<List<String>> getAllModelsByProducer(@PathVariable String value) {
-        return carService.getAllModelsByProducer(value);
+//    @GetMapping("/cars/models/producer/{id}")
+//    @JsonView(value = Views.Level2.class)
+//    public ResponseEntity<List<String>> getAllModelsByProducer(@PathVariable Integer id) {
+//        return carService.getAllModelsByProducer(id);
+//    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/cars/saveWithPhotos")
+    @JsonView(value = Views.Level1.class)
+    public ResponseEntity<String> saveWithPhotos(@RequestParam int producerId, @RequestParam  int modelId, @RequestParam int power,
+                              @RequestParam MultipartFile[] photos,    @RequestParam int year, @RequestParam String color, @RequestParam int mileage, @RequestParam int numberDoors, @RequestParam int numberSeats, Principal principal)
+            throws IOException {
+       return carService.saveWithPhotos(producerId ,modelId,  power, photos, year, color,mileage, numberDoors, numberSeats, principal);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/cars/saveWithPhoto")
+    @PostMapping("/cars/{id}/savePhoto")
     @JsonView(value = Views.Level1.class)
-    public void saveWithPhoto(@RequestParam Model model, @RequestParam Producer producer, @RequestParam int power,
-                              @RequestParam MultipartFile photo, @RequestParam int year, @RequestParam String color, @RequestParam int numberDoors, @RequestParam int numberSeats)
+    public void savePhotoToCarId(@PathVariable Integer id, @RequestParam MultipartFile[] photos)
             throws IOException {
-        carService.saveWithPhoto(model, producer, power, photo, year, color, numberDoors, numberSeats);
+        carService.savePhotoToCarId(id, photos);
     }
 }

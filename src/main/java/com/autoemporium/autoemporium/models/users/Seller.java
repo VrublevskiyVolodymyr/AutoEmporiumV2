@@ -10,7 +10,6 @@ import lombok.*;
 
 
 import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -64,62 +63,3 @@ public class Seller {
         this.user = new User(username, password, List.of(Role.SELLER));
     }
 }
-
-
-//    public Client(UserDetails loadUserByUsername) {
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        List<GrantedAuthority> authorities = new ArrayList<>();
-//        this.roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.name())));
-//        return authorities;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public String getUsername() {
-//        return this.email;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public String getPassword() {
-//        return this.password;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    @JsonView(value = Views.Level1.class)
-//    public boolean isEnabled() {
-//        return true;
-//    }
-
-//    @Data
-//    @AllArgsConstructor
-//    @Builder
-//    public static class ClientDTO {
-//        private String userFirstname;
-//        private String userLastname;
-//        private String email;
-//        private String password;
-//    }
-//}

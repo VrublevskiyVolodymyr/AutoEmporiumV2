@@ -1,21 +1,20 @@
 package com.autoemporium.autoemporium.models;
 
-import com.autoemporium.autoemporium.dao.CurrencyPrivatbankDAO;
+
 import com.autoemporium.autoemporium.models.users.Seller;
-import com.autoemporium.autoemporium.services.CurrencyService;
+
 
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -30,6 +29,7 @@ public class Advertisement {
 
     @JsonView(value = {Views.Level1.class, Views.Level2.class, Views.Level3.class})
     private String title;
+
     @JsonView(value = {Views.Level1.class, Views.Level2.class, Views.Level3.class})
     private String description;
 
@@ -40,9 +40,12 @@ public class Advertisement {
     private Boolean status;
 
     @JsonView(value = {Views.Level1.class, Views.Level2.class, Views.Level3.class})
-    @OneToOne(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
-    @JoinColumn(name = "car_id", referencedColumnName = "id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "car_id", referencedColumnName = "id")
     private Car car;
+
+    @JsonView(value = {Views.Level1.class, Views.Level2.class, Views.Level3.class})
+    private String region;
 
     @JsonView(value = {Views.Level1.class, Views.Level2.class, Views.Level3.class})
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -61,8 +64,9 @@ public class Advertisement {
     @JsonView(value = Views.Level1.class)
     private LocalDateTime editedAt;
 
+    @JsonIgnore
     @JsonView(value = Views.Level1.class)
-    @ManyToOne(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "seller_adv",
             joinColumns = @JoinColumn(name = "adv_id"),
             inverseJoinColumns = @JoinColumn(name = "seller_id")
@@ -70,7 +74,7 @@ public class Advertisement {
     private Seller createdBySeller;
 
     @JsonView(value = Views.Level1.class)
-    @ManyToOne(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "autodealer_adv",
             joinColumns = @JoinColumn(name = "adv_id"),
             inverseJoinColumns = @JoinColumn(name = "autodealer_id")
@@ -89,13 +93,12 @@ public class Advertisement {
     private List<AdvertisementView> advertisementViews;
 
 
-    public Advertisement(String title, String description, BigDecimal price, int power, Seller createdBy, Currency currency) {
+    public Advertisement(String title, String description, BigDecimal price, int power, Seller createdBy, Currency currency, String region) {
         this.title = title;
         this.description = description;
-//        this.car = car;
         this.price = price;
         this.currency = currency;
-
+        this.region = region;
     }
 
 

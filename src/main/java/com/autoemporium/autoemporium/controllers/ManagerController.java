@@ -2,6 +2,7 @@ package com.autoemporium.autoemporium.controllers;
 
 import com.autoemporium.autoemporium.models.Model;
 import com.autoemporium.autoemporium.models.Producer;
+import com.autoemporium.autoemporium.models.Region;
 import com.autoemporium.autoemporium.services.ManagerService;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -50,5 +51,17 @@ public class ManagerController {
     @PostMapping("/producers/{producerId}/model/save")
     public ResponseEntity<String> saveModel(@RequestBody Model model, @PathVariable Integer producerId) {
        return managerService.saveModel(model,producerId);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/regions/save")
+    public ResponseEntity<String> saveRegions(@RequestBody List<Region> regions) {
+        return managerService.saveRegions(regions);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/regions/save/{region}")
+    public ResponseEntity<String> saveRegion(@PathVariable String region ) {
+        return managerService.saveRegion(region);
     }
 }

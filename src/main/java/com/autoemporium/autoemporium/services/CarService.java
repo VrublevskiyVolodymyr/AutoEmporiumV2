@@ -1,9 +1,6 @@
 package com.autoemporium.autoemporium.services;
 
-import com.autoemporium.autoemporium.dao.CarDAO;
-import com.autoemporium.autoemporium.dao.ProducerDAO;
-import com.autoemporium.autoemporium.dao.SellerDAO;
-import com.autoemporium.autoemporium.dao.UserDAO;
+import com.autoemporium.autoemporium.dao.*;
 import com.autoemporium.autoemporium.models.*;
 import com.autoemporium.autoemporium.models.users.Role;
 import com.autoemporium.autoemporium.models.users.Seller;
@@ -35,6 +32,7 @@ public class CarService {
     private SellerDAO sellerDAO;
     private ProducerDAO producerDAO;
     private UserDAO userDAO;
+    private RegionDAO regionDAO;
 
 
     public ResponseEntity<String> save(CarDTO carDTO, Principal principal) {
@@ -109,6 +107,11 @@ public class CarService {
             if (c == null) {
                 return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
             }
+            Advertisement advertisement = c.getAdvertisement();
+
+            if (advertisement != null) {
+                return new ResponseEntity<>("You cannot delete this car because it is used in an ad id " + advertisement.getId(), HttpStatus.FORBIDDEN);
+            }
 
             User user = userDAO.findByUsername(username);
 
@@ -137,9 +140,7 @@ public class CarService {
         }
         return new ResponseEntity<>(" Car id < 0)", HttpStatus.FORBIDDEN);
     }
-//    public  ResponseEntity<String>  deleteCarByModel(String model, Principal principal) {
-//        carDAO.deleteCarByModel(model);
-//    }
+
 
     public ResponseEntity<String> updateCar(int id, CarDTO carDTO, Principal principal) {
 
@@ -185,12 +186,10 @@ public class CarService {
         }
 
         return new ResponseEntity<>("You cannot update this car", HttpStatus.FORBIDDEN);
-}
+    }
 
     public ResponseEntity<List<Car>> getCarsByPower(@PathVariable int value) {
         return new ResponseEntity<>(carDAO.getCarsByPower(value), HttpStatus.OK);
-
-//        return carDAO.findByPower(value);
     }
 
     public ResponseEntity<List<Car>> getCarsByProducer(@PathVariable Integer id) {
@@ -198,8 +197,8 @@ public class CarService {
         return new ResponseEntity<>(carDAO.findByProducer(producer), HttpStatus.OK);
     }
 
-    public ResponseEntity<String> saveWithPhotos(int producerId, int modelId,  int power, MultipartFile[] photos, int year, String color, int mileage,
-             int numberDoors, int numberSeats, Principal principal
+    public ResponseEntity<String> saveWithPhotos(int producerId, int modelId, int power, MultipartFile[] photos, int year, String color, int mileage,
+                                                 int numberDoors, int numberSeats, Principal principal
     ) throws IOException {
         String username = principal.getName();
         Seller seller = sellerDAO.findSellerByUsername(username);
@@ -207,7 +206,7 @@ public class CarService {
         String producer = getProducerById(producerId).getBody();
         String model = getModelByIdByProducerId(producerId, modelId).getBody();
 
-        Car car = new Car(producer,model,power,year,color,mileage,numberDoors,numberSeats);
+        Car car = new Car(producer, model, power, year, color, mileage, numberDoors, numberSeats);
         car.setCreatedBySellerId(sellerId);
 
         List<String> photoPaths = new ArrayList<>();
@@ -243,5 +242,17 @@ public class CarService {
 
         car.getPhoto().addAll(photoPaths);
         carDAO.save(car);
+    }
+
+    public ResponseEntity<List<Region>> getAllRegions() {
+        List<Region> all = regionDAO.findAll();
+        return new ResponseEntity<>(all, HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<Region> getRegionById(Integer id) {
+        Region region = regionDAO.findById(id).get();
+        System.out.println(region);
+        return new ResponseEntity<>(region, HttpStatus.OK);
     }
 }

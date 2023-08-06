@@ -2,7 +2,9 @@ package com.autoemporium.autoemporium.services;
 
 import com.autoemporium.autoemporium.dao.ModelDAO;
 import com.autoemporium.autoemporium.dao.ProducerDAO;
+import com.autoemporium.autoemporium.dao.RegionDAO;
 import com.autoemporium.autoemporium.dao.SellerDAO;
+import com.autoemporium.autoemporium.models.Region;
 import com.autoemporium.autoemporium.models.users.Seller;
 import com.autoemporium.autoemporium.models.Model;
 import com.autoemporium.autoemporium.models.Producer;
@@ -24,7 +26,7 @@ public class ManagerService {
 
     private ProducerDAO producerDAO;
     private ModelDAO modelDAO;
-
+    private RegionDAO regionDAO;
     private SellerDAO sellerDAO;
     MailService mailService;
     UserService userService;
@@ -123,5 +125,30 @@ public class ManagerService {
         String body = "Notification: " + message;
 
         mailService.sendEmail(managerEmail, subject, body);
+    }
+
+    public ResponseEntity<String> saveRegion(String region) {
+        List<String> singleRegionsDAO = regionDAO.findAll().stream().map(Region::getRegion).toList();
+        Region region1 = new Region(region);
+
+        if (singleRegionsDAO.contains(region)) {
+            return new ResponseEntity<>("Region already exists", HttpStatus.FORBIDDEN);
+        } else {
+            regionDAO.save(region1 );
+            return new ResponseEntity<>("Region is saved", HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<String> saveRegions(List<Region> regions) {
+        List<String> singleRegionsDAO  = regionDAO.findAll().stream().map(Region::getRegion).toList();
+        List<String> singleRegion = regions.stream().map(Region::getRegion).toList();
+        boolean containsElement = CollectionUtils.containsAny(singleRegion, singleRegionsDAO);
+
+        if (containsElement) {
+            return new ResponseEntity<>("One of regions already exists", HttpStatus.FORBIDDEN);
+        } else {
+            regionDAO.saveAll(regions);
+            return new ResponseEntity<>("Regions is saved", HttpStatus.OK);
+        }
     }
 }

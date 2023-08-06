@@ -1,13 +1,10 @@
 package com.autoemporium.autoemporium.services;
 
 
-import com.autoemporium.autoemporium.dao.AdvertisementViewDAO;
-import com.autoemporium.autoemporium.dao.UserDAO;
+import com.autoemporium.autoemporium.dao.*;
 import com.autoemporium.autoemporium.models.*;
 import com.autoemporium.autoemporium.models.Currency;
 import com.autoemporium.autoemporium.models.users.AccountType;
-import com.autoemporium.autoemporium.dao.AdvertisementDAO;
-import com.autoemporium.autoemporium.dao.SellerDAO;
 import com.autoemporium.autoemporium.models.users.Role;
 import com.autoemporium.autoemporium.models.users.Seller;
 import com.autoemporium.autoemporium.models.users.User;
@@ -47,6 +44,7 @@ public class AdvertisementService {
     private MailService mailService;
     private CurrencyService currencyService;
     private AdvertisementViewDAO advertisementViewDAO;
+    private RegionDAO regionDAO;
 
 
     public ResponseEntity<String> saveByCarId(AdvertisementDTO advertisementDTO, Principal principal) {
@@ -130,6 +128,8 @@ public class AdvertisementService {
 
     private Advertisement createAdvertisement(AdvertisementDTO advertisementDTO, Seller seller) {
         Advertisement advertisement = new Advertisement();
+        String region = regionDAO.findById(advertisementDTO.getRegionId()).get().getRegion();
+
         advertisement.setTitle(advertisementDTO.getTitle());
         advertisement.setDescription(advertisementDTO.getDescription());
         advertisement.setCurrency(advertisementDTO.getCurrency());
@@ -139,6 +139,7 @@ public class AdvertisementService {
         advertisement.setStatus(true);
         advertisement.setCreatedAt(LocalDateTime.now().withNano(0));
         advertisement.setCreatedBySeller(seller);
+        advertisement.setRegion(region);
         seller.setCountOfAds(seller.getCountOfAds() + 1);
 
         return advertisement;
@@ -194,24 +195,13 @@ public class AdvertisementService {
 
     public ResponseEntity<List<Advertisement>> getAllAdvertisement() {
         List<Advertisement> all = advertisementDAO.findAll();
-//        for (Advertisement advertisement : all) {
-//            if (advertisement.getCurrency() == Currency.UAH) {
-//                this.convertCurrency(advertisement);
-//            } else {
-//                this.setDefaultPriceCar(advertisement);
-//            }
-//        }
+
         return new ResponseEntity<>(all, HttpStatus.OK);
     }
 
     public ResponseEntity<Advertisement> getAdvertisementById(Integer id, Principal principal) {
         Advertisement advertisement = advertisementDAO.findById(id).orElse(null);
         if (advertisement != null) {
-//            if (advertisement.getCurrency() == Currency.UAH) {
-//                this.convertCurrency(advertisement);
-//            } else {
-//                this.setDefaultPriceCar(advertisement);
-//            }
 
             String username = principal.getName();
             User user = userDAO.findByUsername(username);
@@ -221,14 +211,15 @@ public class AdvertisementService {
             AdvertisementView view = new AdvertisementView();
             view.setAdvertisement(advertisement);
             view.setViewDate(LocalDate.now());
-            view.setViewerUserId(idUser );
+            view.setViewerUserId(idUser);
             view.setIsOwner(isOwner);
 
             advertisement.setViews(advertisement.getViews() + 1);
 
             advertisementViewDAO.save(view);
+            return new ResponseEntity<>(advertisement, HttpStatus.OK);
         }
-        return new ResponseEntity<>(advertisement, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.valueOf("Not exist"));
     }
 
     public ResponseEntity<String> saveWithCar(AdvertisementDTO advertisementDTO, Principal principal) {
@@ -239,6 +230,7 @@ public class AdvertisementService {
 //        User user = userResponse.getBody();
 //        List<String> authorities = userService.loadUserByUsername(username).getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         Advertisement advertisement = new Advertisement();
+        String region = regionDAO.findById(advertisementDTO.getRegionId()).get().getRegion();
         CarDTO carDTO = advertisementDTO.getCarDTO();
         int producerId = carDTO.getProducerId();
         int modelId = carDTO.getModelId();
@@ -258,6 +250,7 @@ public class AdvertisementService {
             advertisement.setDescription(advertisementDTO.getDescription());
             advertisement.setCurrency(advertisementDTO.getCurrency());
             advertisement.setPrice(advertisementDTO.getPrice());
+            advertisement.setRegion(region);
             seller.setCountOfAds(seller.getCountOfAds() + 1);
             car.setProducer(producer);
             car.setModel(model);
@@ -290,6 +283,8 @@ public class AdvertisementService {
             advertisement.setDescription(advertisementDTO.getDescription());
             advertisement.setCurrency(advertisementDTO.getCurrency());
             advertisement.setPrice(advertisementDTO.getPrice());
+            advertisement.setRegion(region);
+            seller.setCountOfAds(seller.getCountOfAds() + 1);
             car.setProducer(producer);
             car.setModel(model);
             car.setPower(carDTO.getPower());
@@ -317,18 +312,17 @@ public class AdvertisementService {
     }
 
     public ResponseEntity<String> saveWithCarWithPhoto(Principal principal, int modelId, int producerId, int power, MultipartFile[] photos, int year, String color, int mileage, int numberDoors,
-                                                       int numberSeats, String title, String description, BigDecimal price, Currency currency
+                                                       int numberSeats, String title, String description, BigDecimal price, Currency currency, int regionId
     ) throws IOException {
         String username = principal.getName();
         Seller seller = sellerDAO.findSellerByUsername(username);
         int sellerId = seller.getId();
-//        ResponseEntity<User> userResponse = userService.getUserByUsername(username);
-//        User user = userResponse.getBody();
-//        List<String> authorities = userService.loadUserByUsername(username).getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
         Advertisement advertisement = new Advertisement();
         String producer = carService.getProducerById(producerId).getBody();
         String model = carService.getModelByIdByProducerId(producerId, modelId).getBody();
         Car car = new Car();
+        String region = regionDAO.findById(regionId).get().getRegion();
 
         if (seller.getAccountType() == AccountType.BASIC && seller.getCountOfAds() >= 1) {
             return new ResponseEntity<>("You can only post one advertisement with a basic account.", HttpStatus.FORBIDDEN);
@@ -341,6 +335,7 @@ public class AdvertisementService {
             advertisement.setDescription(description);
             advertisement.setCurrency(currency);
             advertisement.setPrice(price);
+            advertisement.setRegion(region);
             seller.setCountOfAds(seller.getCountOfAds() + 1);
             car.setProducer(producer);
             car.setModel(model);
@@ -384,6 +379,8 @@ public class AdvertisementService {
             advertisement.setDescription(description);
             advertisement.setCurrency(currency);
             advertisement.setPrice(price);
+            advertisement.setRegion(region);
+            seller.setCountOfAds(seller.getCountOfAds() + 1);
             car.setProducer(producer);
             car.setModel(model);
             car.setPower(power);
@@ -422,11 +419,8 @@ public class AdvertisementService {
         }
     }
 
-    public ResponseEntity<String> deleteAdvertisementById(int id, Principal principal) {
-        Advertisement adv = advertisementDAO.findById(id).orElse(null);
-        advertisementDAO.delete(adv);
-        return new ResponseEntity<>("Advertisement is deleted", HttpStatus.OK);
-
+//    public ResponseEntity<String> deleteAdvertisementById(int id, Principal principal) {
+//
 //        if (id > 0) {
 //            String username = principal.getName();
 //            Advertisement adv = advertisementDAO.findById(id).orElse(null);
@@ -455,6 +449,9 @@ public class AdvertisementService {
 //            boolean isCreatedByUser = adv.getCreatedBySeller().getUser().getUsername().equals(username);
 //
 //            if (isAdmin || (isSeller && isCreatedByUser)) {
+//                Advertisement advertisement = advertisementDAO.findById(id).get();
+////                advertisement.setCreatedBySeller(null);
+////                advertisement.setCreatedByDealer(null);
 //                advertisementDAO.delete(adv);
 //                return new ResponseEntity<>("Advertisement is deleted", HttpStatus.OK);
 //            }
@@ -462,5 +459,46 @@ public class AdvertisementService {
 //            return new ResponseEntity<>("You cannot delete this advertisement", HttpStatus.FORBIDDEN);
 //        }
 //        return new ResponseEntity<>("Advertisement id < 0)", HttpStatus.FORBIDDEN);
+//    }
+
+    public ResponseEntity<String> deleteAdvertisementById(int id, Principal principal) {
+
+        if (id <= 0) {
+            return new ResponseEntity<>("Invalid Advertisement Id", HttpStatus.BAD_REQUEST);
+        }
+
+        String username = principal.getName();
+        Advertisement adv = advertisementDAO.findById(id).orElse(null);
+        if (adv == null) {
+            return new ResponseEntity<>("Advertisement not found", HttpStatus.NOT_FOUND);
+        }
+
+        User user = userDAO.findByUsername(username);
+
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+        boolean isSeller = false;
+        boolean isAdmin = false;
+
+        for (GrantedAuthority authority : authorities) {
+            String authorityName = authority.getAuthority();
+            if ("SELLER".equals(authorityName)) {
+                isSeller = true;
+                break;
+            }
+            if ("ADMIN".equals(authorityName) || "MANAGER".equals(authorityName)) {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        boolean isCreatedByUser = adv.getCreatedBySeller().getUser().getUsername().equals(username);
+
+        if (isAdmin || (isSeller && isCreatedByUser)) {
+            adv.getCreatedBySeller().getAdvertisements().remove(adv);
+            advertisementDAO.delete(adv);
+            return new ResponseEntity<>("Advertisement is deleted", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("You cannot delete this advertisement", HttpStatus.FORBIDDEN);
     }
 }

@@ -39,10 +39,9 @@ public class User implements UserDetails {
     @JsonView(value = Views.Level1.class)
     private List<Role> roles;
 
+    @JsonView(value = Views.Level1.class)
     private Boolean status;
 
-//    @OneToOne(cascade = CascadeType.ALL, mappedBy = "buyer")
-//    private Buyer buyer;
 
     public User(String username, String password, List<Role> roles, Boolean status) {
         this.username = username;

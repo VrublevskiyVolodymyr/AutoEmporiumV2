@@ -3,10 +3,7 @@ package com.autoemporium.autoemporium.controllers;
 
 
 import com.autoemporium.autoemporium.dao.CarDAO;
-import com.autoemporium.autoemporium.models.Car;
-import com.autoemporium.autoemporium.models.CarDTO;
-import com.autoemporium.autoemporium.models.Model;
-import com.autoemporium.autoemporium.models.Producer;
+import com.autoemporium.autoemporium.models.*;
 import com.autoemporium.autoemporium.queryFilters.CarSpecifications;
 import com.autoemporium.autoemporium.services.CarService;
 import com.autoemporium.autoemporium.views.Views;
@@ -66,6 +63,7 @@ public class CarController {
     public ResponseEntity<Car> getCars(@PathVariable int id) {
         return carService.getCar(id);
     }
+
     @JsonView(value = Views.Level3.class)
     @GetMapping("/producers/all")
     public ResponseEntity<List<Producer>> getAllProducers() {
@@ -98,11 +96,6 @@ public class CarController {
        return carService.deleteCarById(id, principal);
     }
 
-//    @ResponseStatus(HttpStatus.OK)
-//    @DeleteMapping("/cars/model/{model}")
-//    public  ResponseEntity<String> deleteCarByModel(@PathVariable String model, Principal principal) {
-//       return carService.deleteCarByModel(model,principal);
-//    }
 
     @PatchMapping("/cars/{id}")
     public ResponseEntity<String> updateCar(@PathVariable int id, @RequestBody CarDTO carDTO, Principal principal) {
@@ -145,5 +138,16 @@ public class CarController {
     public void savePhotoToCarId(@PathVariable Integer id, @RequestParam MultipartFile[] photos)
             throws IOException {
         carService.savePhotoToCarId(id, photos);
+    }
+
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/regions/all")
+    public ResponseEntity<List<Region>> getAllRegions() {
+        return  carService.getAllRegions();
+    }
+    @JsonView(value = Views.Level3.class)
+    @GetMapping("/region/{id}")
+    public ResponseEntity<Region> getRegionById(@PathVariable Integer id) {
+        return  carService.getRegionById(id);
     }
 }

@@ -54,9 +54,9 @@ public class AdvertisementController {
     public ResponseEntity<String> saveWithCarWithPhoto (Principal principal, @RequestParam int modelId, @RequestParam int producerId, @RequestParam int power,
                                                         @RequestParam MultipartFile[] photos, @RequestParam int year, @RequestParam String color,
                                                         @RequestParam int mileage, @RequestParam int numberDoors, @RequestParam int numberSeats, @RequestParam  String title,
-                                                        @RequestParam  String description, @RequestParam BigDecimal price, @RequestParam Currency currency )
+                                                        @RequestParam  String description, @RequestParam BigDecimal price, @RequestParam Currency currency, @RequestParam int regionId )
             throws IOException {
-        return  service.saveWithCarWithPhoto(principal,modelId, producerId, power, photos, year, color,mileage, numberDoors, numberSeats,title,description,price,currency );
+        return  service.saveWithCarWithPhoto(principal,modelId, producerId, power, photos, year, color,mileage, numberDoors, numberSeats,title,description,price,currency,regionId );
     }
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/advertisements/{id}")

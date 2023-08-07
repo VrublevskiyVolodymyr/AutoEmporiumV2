@@ -12,8 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -32,6 +34,15 @@ public class CurrencyService {
         this.currencyDAO = currencyDAO;
         this.advertisementDAO = advertisementDAO;
         this.advertisementService = advertisementService;
+    }
+
+
+    public ResponseEntity<List<CurrencyPrivatbank>> getCurrencies() {
+        return new ResponseEntity<>(currencyDAO.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<CurrencyPrivatbank> getCurrencyByName(@PathVariable String name) {
+        return new ResponseEntity<>(currencyDAO.findByName(name), HttpStatus.OK);
     }
 
     public void updateCurrencyRates() throws IOException {

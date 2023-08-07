@@ -2,6 +2,7 @@ package com.autoemporium.autoemporium.controllers;
 
 import com.autoemporium.autoemporium.dao.CurrencyPrivatbankDAO;
 import com.autoemporium.autoemporium.models.CurrencyPrivatbank;
+import com.autoemporium.autoemporium.services.CurrencyService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +15,16 @@ import java.util.List;
 @AllArgsConstructor
 @Controller
 public class CurrencyPrivatbankController {
-    private CurrencyPrivatbankDAO currencyDAO;
+    private CurrencyService currencyService;
+
 
     @GetMapping("/currency")
     public ResponseEntity<List<CurrencyPrivatbank>> getCurrencies() {
-        return new ResponseEntity<>(currencyDAO.findAll(), HttpStatus.OK);
+        return currencyService.getCurrencies();
     }
 
     @GetMapping("/currency/{name}")
     public ResponseEntity<CurrencyPrivatbank> getCurrencyByName(@PathVariable String name) {
-        return new ResponseEntity<>(currencyDAO.findByName(name), HttpStatus.OK);
+        return currencyService.getCurrencyByName(name);
     }
 }

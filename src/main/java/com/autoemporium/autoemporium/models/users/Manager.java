@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -29,6 +30,12 @@ public class Manager {
     @JsonView(value = Views.Level1.class)
     @Column(unique = true)
     private String phone;
+
+    @JsonView(value = Views.Level1.class)
+    private int autoDealer_id;
+
+    @JsonView(value = Views.Level1.class)
+    private LocalDateTime createdAt;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
@@ -41,6 +42,12 @@ public class Seller {
 
     @JsonView(value = Views.Level1.class)
     private int countOfAds;
+
+    @JsonView(value = Views.Level1.class)
+    private int autoDealer_id;
+
+    @JsonView(value = Views.Level1.class)
+    private LocalDateTime createdAt;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")

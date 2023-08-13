@@ -37,36 +37,27 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
-                .requestMatchers(HttpMethod.POST, "/sellers/save", "/buyers/save", "/owner/save", "/users/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/manager/save", "/admin/save").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/sellers/**", "/buyers/**", "/buyer/**", "/users/**", "/user/**").hasAnyAuthority("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/cars/**","/views/**","/average-price/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/cars/all").hasAnyAuthority("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/managers/**").hasAnyAuthority("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/admin/**", "/owner/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/seller/**", "/buyer/**").hasAnyAuthority("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/currency/**").hasAnyAuthority("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.POST, "/producers/**", "/regions/**").hasAnyAuthority("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/producers/**", "/producer/**","/region/**","/regions/**", "/model/**", "/advertisements/**", "/advertisement/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/notify/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/advertisement/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN"))
+                                .requestMatchers(HttpMethod.POST, "/sellers/save", "/buyers/save", "/owner/save", "/users/login", "/liqpay-callback").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/manager/**", "/admin/**", "/mechanic/**","/autodealers/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/sellers/**", "/buyers/**", "/buyer/**", "/users/**", "/user/**", "/mechanics/**","/autodealers/**").hasAnyAuthority("MANAGER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/cars/**", "/views/**", "/average-price/**", "/buy-premium", "/confirmation-of-payment/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.GET, "/cars/all").hasAnyAuthority("MANAGER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/managers/**", "/orderId/**").hasAnyAuthority("MANAGER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/admin/**", "/owner/**","/autodealers/**").hasAnyAuthority("ADMIN","DEALER_ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.POST, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.PATCH, "/cars/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.PATCH, "/seller/**", "/buyer/**", "/mechanic/**").hasAnyAuthority("MANAGER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/currency/**").hasAnyAuthority("ADMIN", "MANAGER","DEALER_ADMIN","DEALER_MANAGER")
+                                .requestMatchers(HttpMethod.POST, "/producers/**", "/regions/**").hasAnyAuthority("MANAGER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/producers/**", "/producer/**", "/region/**", "/regions/**", "/model/**", "/advertisements/**", "/advertisement/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/notify/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.POST, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.PATCH, "/advertisements/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER")
+                                .requestMatchers(HttpMethod.GET, "/mechanic/**").hasAnyAuthority("ADMIN", "MANAGER"," MECHANIC","DEALER_ADMIN","DEALER_MANAGER","DEALER_MECHANIC")
+                                .requestMatchers(HttpMethod.DELETE, "/advertisement/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN","DEALER_ADMIN","DEALER_MANAGER","DEALER_SELLER"))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder(12);
-//    }
-
-//    @SneakyThrows
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
-//        return authenticationConfiguration.getAuthenticationManager();
-//    }
 }

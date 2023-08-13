@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,84 +50,13 @@ public class UserService implements UserDetailsService {
 
     private final AuthenticationManager authenticationManager;
 
-//    public UserService(SellerDAO sellerDAO, UserDAO userDAO, OwnerDAO ownerDAO, BuyerDAO buyerDAO, ManagerDAO managerDAO, AdministratorDAO administratorDAO, PasswordEncoder passwordEncoder, @Lazy AuthenticationManager authenticationManager) {
-//        this.sellerDAO = sellerDAO;
-//        this.userDAO = userDAO;
-//        this.ownerDAO = ownerDAO;
-//        this.buyerDAO = buyerDAO;
-//        this.managerDAO = managerDAO;
-//        this.administratorDAO = administratorDAO;
-//        this.passwordEncoder = passwordEncoder;
-//        this.authenticationManager = authenticationManager;
-//    }
+    private final MechanicDAO mechanicDAO;
 
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        System.out.println(username);
         User byUsername = userDAO.findByUsername(username);
-//        System.out.println(byEmail);
         return userDAO.findByUsername(username);
-    }
-
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        System.out.println(username);
-//        Client byEmail = clientDAO.findByEmail(username);
-//        System.out.println(byEmail);
-//        return clientDAO.findByEmail(username);
-//    }
-
-    public String getManagerEmail() {
-//        List<User> managerClients = userDAO.findByRolesContaining(Role.MANAGER);
-//        if (!((List<?>) managerClients).isEmpty()) {
-//            User managerClient = managerClients.get(0);
-//            return managerClient.getUsername();
-//        }
-//        return null;
-        String managerEmail = managerDAO.findAll().stream().findFirst().map(Manager::getUser).map(User::getUsername).orElse(null);;
-        if (!(managerEmail == null)) {
-            return managerEmail;
-        }
-        return null;
-    }
-
-    public ResponseEntity<String> saveSeller(@RequestBody SellerDTO sellerDTO) {
-        if (sellerDTO == null) {
-            throw new RuntimeException();
-        }
-        String username = sellerDTO.getUsername();
-        User user = userDAO.findByUsername(username);
-        if (user != null) {
-            List<String> authorities = loadUserByUsername(username).getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-
-            if (!authorities.contains("SELLER")) {
-                Seller seller = new Seller();
-                seller.setFirstName(sellerDTO.getUserFirstname());
-                seller.setLastName(sellerDTO.getUserLastname());
-                seller.setPhone(sellerDTO.getPhoneNumber());
-                seller.setStatus(Status.ACTIVE);
-                user.getRoles().add(Role.SELLER);
-                if ((authorities.contains("MANAGER"))||(authorities.contains("ADMIN"))) {
-                seller.setAccountType(AccountType.PREMIUM);
-                }
-                seller.setUser(user);
-                sellerDAO.save(seller);
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-        } else {
-            Seller seller = new Seller();
-            seller.setFirstName(sellerDTO.getUserFirstname());
-            seller.setLastName(sellerDTO.getUserLastname());
-            seller.setPhone(sellerDTO.getPhoneNumber());
-            seller.setStatus(Status.ACTIVE);
-            seller.setUser(new User(sellerDTO.getUsername(), passwordEncoder.encode(sellerDTO.getPassword()), List.of(Role.SELLER), true));
-            sellerDAO.save(seller);
-            return new ResponseEntity<>(HttpStatus.OK);
-        }
-
-
-        return new ResponseEntity<>("Seller is already exist", HttpStatus.FORBIDDEN);
     }
 
     public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
@@ -147,14 +77,147 @@ public class UserService implements UserDetailsService {
         return new ResponseEntity<>("bad credentials", HttpStatus.FORBIDDEN);
     }
 
-    public void saveBuyer(BuyerDTO buyerDTO) {
-        if (buyerDTO == null) {
-            throw new RuntimeException();
+    public ResponseEntity<String> saveOwner(AdministratorDTO administratorDTO) {
+        if (administratorDTO == null) {
+            throw new NullPointerException("AdministratorDTO cannot be null");
         }
-        Buyer buyer = new Buyer();
-        buyer.setUser(new User(buyerDTO.getUsername(), passwordEncoder.encode(buyerDTO.getPassword()), List.of(Role.BUYER),true));
-        buyer.setStatus(Status.ACTIVE);
-        buyerDAO.save(buyer);
+        Owner owner1 = ownerDAO.findAll().stream().findFirst().orElse(null);
+        if (owner1 == null) {
+            Owner owner = Owner.getInstance(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()));
+            ownerDAO.save(owner);
+            return new ResponseEntity<>("Owner is saved :)", HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>("Owner already exists, you cannot create an Owner", HttpStatus.FORBIDDEN);
+    }
+
+    public ResponseEntity<String> saveAdmin(AdministratorDTO administratorDTO) {
+        try {
+            if (administratorDTO == null) {
+                throw new NullPointerException("AdministratorDTO cannot be null");
+            }
+            Administrator administrator = new Administrator();
+            administrator.setUser(new User(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()), List.of(Role.ADMIN), true));
+            administrator.setCreatedAt(LocalDateTime.now().withNano(0));
+            Administrator adminSaved = administratorDAO.save(administrator);
+
+            return new ResponseEntity<>("The administrator has been successfully added to the dealer with ID: " + adminSaved.getId(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error saving administrator."+ e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public ResponseEntity<String> saveManager(ManagerDTO managerDTO) {
+        try {
+            if (managerDTO == null) {
+                throw new NullPointerException("ManagerDTO cannot be null");
+            }
+
+            Manager manager = new Manager();
+            manager.setUser(new User(managerDTO.getUsername(), passwordEncoder.encode(managerDTO.getPassword()), List.of(Role.MANAGER), true));
+            manager.setFirstName(managerDTO.getUserFirstname());
+            manager.setLastName(managerDTO.getUserLastname());
+            manager.setPhone(managerDTO.getPhoneNumber());
+            manager.setCreatedAt(LocalDateTime.now().withNano(0));
+            Manager managerSaved = managerDAO.save(manager);
+
+            return new ResponseEntity<>("The manager has been successfully saved with ID: " + managerSaved.getId(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error saving manager."+ e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public ResponseEntity<String> saveSeller(@RequestBody SellerDTO sellerDTO) {
+        try {
+            if (sellerDTO == null) {
+                throw new NullPointerException("SellerDTO cannot be null");
+            }
+
+            String username = sellerDTO.getUsername();
+            User user = userDAO.findByUsername(username);
+            if (user != null) {
+                List<String> authorities = loadUserByUsername(username).getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+                if (!authorities.contains("SELLER")) {
+                    Seller seller = new Seller();
+                    seller.setFirstName(sellerDTO.getUserFirstname());
+                    seller.setLastName(sellerDTO.getUserLastname());
+                    seller.setPhone(sellerDTO.getPhoneNumber());
+                    seller.setStatus(Status.ACTIVE);
+                    seller.setCreatedAt(LocalDateTime.now().withNano(0));
+                    user.getRoles().add(Role.SELLER);
+                    if ((authorities.contains("MANAGER")) || (authorities.contains("ADMIN"))) {
+                        seller.setAccountType(AccountType.PREMIUM);
+                    }
+                    seller.setUser(user);
+                    Seller sellerSaved = sellerDAO.save(seller);
+
+                    return new ResponseEntity<>("Seller has been successfully saved with ID: " + sellerSaved.getId(), HttpStatus.OK);
+                }
+            } else {
+                Seller seller = new Seller();
+                seller.setFirstName(sellerDTO.getUserFirstname());
+                seller.setLastName(sellerDTO.getUserLastname());
+                seller.setPhone(sellerDTO.getPhoneNumber());
+                seller.setStatus(Status.ACTIVE);
+                seller.setCreatedAt(LocalDateTime.now().withNano(0));
+                seller.setUser(new User(sellerDTO.getUsername(), passwordEncoder.encode(sellerDTO.getPassword()), List.of(Role.SELLER), true));
+                Seller sellerSaved = sellerDAO.save(seller);
+
+                return new ResponseEntity<>("Seller has been successfully saved with ID: " + sellerSaved.getId(), HttpStatus.OK);
+            }
+            return new ResponseEntity<>("Seller is already exist", HttpStatus.FORBIDDEN);
+
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error saving seller"+ e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<String> saveMechanic(MechanicDTO mechanicDTO) {
+        try {
+            if (mechanicDTO == null) {
+                throw new NullPointerException("MechanicDTO cannot be null");
+            }
+            Mechanic mechanic = new Mechanic();
+            mechanic.setUser(new User(mechanicDTO.getUsername(), passwordEncoder.encode(mechanicDTO.getPassword()), List.of(Role.MECHANIC), true));
+            mechanic.setCreatedAt(LocalDateTime.now().withNano(0));
+            Mechanic mechanicSaved = mechanicDAO.save(mechanic);
+
+            return new ResponseEntity<>("Mechanic has been saved successfully with ID: " + mechanicSaved.getId(), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error saving mechanic"+ e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public ResponseEntity<String> saveBuyer(BuyerDTO buyerDTO) {
+        try {
+            if (buyerDTO == null) {
+                throw new NullPointerException("BuyerDTO cannot be null");
+            }
+            Buyer buyer = new Buyer();
+            buyer.setUser(new User(buyerDTO.getUsername(), passwordEncoder.encode(buyerDTO.getPassword()), List.of(Role.BUYER), true));
+            buyer.setStatus(Status.ACTIVE);
+            buyer.setCreatedAt(LocalDateTime.now().withNano(0));
+            Buyer buyerSaved = buyerDAO.save(buyer);
+
+            return new ResponseEntity<>("Buyer is saved successfully with ID: " + buyerSaved.getId(), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error saving buyer."+ e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<List<Administrator>> getAllAdmins() {
+        return new ResponseEntity<>(administratorDAO.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Manager>> getAllManagers() {
+        return new ResponseEntity<>(managerDAO.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Mechanic>> getAllMechanics() {
+        return new ResponseEntity<>(mechanicDAO.findAll(), HttpStatus.OK);
     }
 
     public ResponseEntity<List<Buyer>> getAllBuyers() {
@@ -177,50 +240,6 @@ public class UserService implements UserDetailsService {
         return new ResponseEntity<>(buyerDAO.findBuyerByUsername(username), HttpStatus.OK);
     }
 
-    public void saveManager(ManagerDTO managerDTO) {
-        if (managerDTO == null) {
-            throw new RuntimeException();
-        }
-        Manager manager = new Manager();
-        manager.setUser(new User(managerDTO.getUsername(), passwordEncoder.encode(managerDTO.getPassword()), List.of(Role.MANAGER),true));
-        manager.setFirstName(managerDTO.getUserFirstname());
-        manager.setLastName(managerDTO.getUserLastname());
-        manager.setPhone(managerDTO.getPhoneNumber());
-        managerDAO.save(manager);
-    }
-
-
-    public void saveAdmin(AdministratorDTO administratorDTO) {
-        if (administratorDTO == null) {
-            throw new RuntimeException();
-        }
-        Administrator administrator = new Administrator();
-        administrator.setUser(new User(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()), List.of(Role.ADMIN),true));
-        administratorDAO.save(administrator);
-    }
-
-
-    public ResponseEntity<List<Manager>> getAllManagers() {
-        return new ResponseEntity<>(managerDAO.findAll(), HttpStatus.OK);
-    }
-
-
-    public ResponseEntity<String> saveOwner(AdministratorDTO administratorDTO) {
-        if (administratorDTO == null) {
-            throw new RuntimeException();
-        }
-        Owner owner1 = ownerDAO.findAll().stream().findFirst().orElse(null);
-        if (owner1 == null) {
-            Owner owner = Owner.getInstance(administratorDTO.getUsername(), passwordEncoder.encode(administratorDTO.getPassword()));
-            ownerDAO.save(owner);
-            return new ResponseEntity<>("Owner is saved :)", HttpStatus.CREATED);
-        }
-        return new ResponseEntity<>("Owner already exists, you cannot create an Owner", HttpStatus.FORBIDDEN);
-    }
-
-    public ResponseEntity<List<Administrator>> getAllAdmins() {
-        return new ResponseEntity<>(administratorDAO.findAll(), HttpStatus.OK);
-    }
 
     public void changeSellerStatus(Integer id, Integer statusId) {
         Seller seller = sellerDAO.findById(id).orElse(null);
@@ -246,10 +265,21 @@ public class UserService implements UserDetailsService {
                 buyer.getUser().setStatus(true);
             } else {
                 buyer.setStatus(Status.BANNED);
-               buyer.getUser().setStatus(false);
+                buyer.getUser().setStatus(false);
 
             }
-           buyerDAO.save(buyer);
+            buyerDAO.save(buyer);
         }
+    }
+
+
+
+    public String getManagerEmail() {
+        String managerEmail = managerDAO.findAll().stream().findFirst().map(Manager::getUser).map(User::getUsername).orElse(null);
+
+        if (!(managerEmail == null)) {
+            return managerEmail;
+        }
+        return null;
     }
 }

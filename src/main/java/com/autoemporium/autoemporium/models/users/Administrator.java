@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -18,6 +19,12 @@ public class Administrator {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(value = Views.Level1.class)
     private int id;
+
+    @JsonView(value = Views.Level1.class)
+    private int autoDealer_id;
+
+    @JsonView(value = Views.Level1.class)
+    private LocalDateTime createdAt;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")

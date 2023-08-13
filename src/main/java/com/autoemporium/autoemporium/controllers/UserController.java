@@ -24,37 +24,66 @@ public class UserController {
     private SellerDAO sellerDAO;
     private OwnerDAO ownerDAO;
 
-    @ResponseStatus(HttpStatus.OK)
+
     @PostMapping("/admin/save")
-    public void saveAdmin(@RequestBody @Valid AdministratorDTO administratorDTO) {
-        userService.saveAdmin(administratorDTO);
+    public ResponseEntity<String> saveAdmin(@RequestBody @Valid AdministratorDTO administratorDTO) {
+      return   userService.saveAdmin(administratorDTO);
     }
-    @ResponseStatus(HttpStatus.OK)
+
     @PostMapping("/owner/save")
     public ResponseEntity<String> saveOwner(@RequestBody @Valid AdministratorDTO administratorDTO) {
       return userService.saveOwner(administratorDTO);
     }
-    @ResponseStatus(HttpStatus.OK)
+
     @PostMapping("/manager/save")
-    public void saveManager(@RequestBody @Valid ManagerDTO managerDTO) {
-        userService.saveManager(managerDTO);
-    }
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/buyers/save")
-    public void saveBuyer(@RequestBody @Valid BuyerDTO buyerDTO) {
-        userService.saveBuyer(buyerDTO);
+    public ResponseEntity<String> saveManager(@RequestBody @Valid ManagerDTO managerDTO) {
+        return  userService.saveManager(managerDTO);
     }
 
-    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/sellers/save")
+    public ResponseEntity<String> saveSeller(@RequestBody @Valid SellerDTO sellerDTO) {
+        return   userService.saveSeller(sellerDTO);
+    }
+
+    @PostMapping("/mechanic/save")
+    public ResponseEntity<String> saveMechanic(@RequestBody @Valid MechanicDTO mechanicDTO) {
+        return   userService.saveMechanic(mechanicDTO);
+    }
+
+
+    @PostMapping("/buyers/save")
+    public ResponseEntity<String> saveBuyer(@RequestBody @Valid BuyerDTO buyerDTO) {
+        return   userService.saveBuyer(buyerDTO);
+    }
+
+
     @PostMapping("/users/login")
     public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
         return userService.login(userDTO);
+    }
+
+
+    @PatchMapping("/seller/{id}/status/{statusId}")
+    public void changeSellerStatus(@PathVariable Integer id, @PathVariable Integer statusId) {
+        userService.changeSellerStatus(id,statusId);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/buyer/{id}/status/{statusId}")
+    public void changeBuyerStatus(@PathVariable Integer id, @PathVariable Integer statusId) {
+        userService.changeBuyerStatus(id,statusId);
     }
 
     @GetMapping("/admin/all")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<Administrator>> getAllAdmins() {
         return userService.getAllAdmins();
+    }
+
+    @GetMapping("/mechanics/all")
+    @JsonView(value = Views.Level1.class)
+    public ResponseEntity<List<Mechanic>> getAllAMechanics() {
+        return userService.getAllMechanics();
     }
 
     @GetMapping("/owner/all")
@@ -68,21 +97,25 @@ public class UserController {
     public ResponseEntity<List<Manager>> getAllManagers() {
         return userService.getAllManagers();
     }
+
     @GetMapping("/buyers/all")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<Buyer>> getAllBuyer() {
         return userService.getAllBuyers();
     }
+
     @GetMapping("/users/all")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<User>> getAllUser() {
         return userService.getAllUsers();
     }
+
     @GetMapping("/user/id/{id}")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<User> getUserById( @PathVariable Integer id) {
         return userService.getUserById(id);
     }
+
     @GetMapping("/user/username/{username}")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<User> getUserByUsername( @PathVariable String username) {
@@ -95,38 +128,13 @@ public class UserController {
         return userService.getBuyerByUsername(username);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/sellers/save")
-    public ResponseEntity<String> saveSeller(@RequestBody @Valid SellerDTO sellerDTO) {
-      return   userService.saveSeller(sellerDTO);
-    }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/seller/{id}/status/{statusId}")
-    public void changeSellerStatus(@PathVariable Integer id, @PathVariable Integer statusId) {
-        userService.changeSellerStatus(id,statusId);
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/buyer/{id}/status/{statusId}")
-    public void changeBuyerStatus(@PathVariable Integer id, @PathVariable Integer statusId) {
-        userService.changeBuyerStatus(id,statusId);
-    }
-
-//    @ResponseStatus(HttpStatus.OK)
-//    @PostMapping("/clients/login")
-//    public ResponseEntity<String> login(@RequestBody ClientDTO clientDTO) {
-//        return clientService.login(clientDTO);
-//    }
-
-    //OPEN
     @GetMapping("/sellers/all")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<Seller>> getAllSellersWithoutSensetiveInformation() {
         return new ResponseEntity<>(sellerDAO.findAll(), HttpStatus.OK);
     }
 
-    //ADMIN
     @GetMapping("/admin/seller/all")
     @JsonView(value = Views.Level1.class)
     public ResponseEntity<List<Seller>> getAllSellers() {

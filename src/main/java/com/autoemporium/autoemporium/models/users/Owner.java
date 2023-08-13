@@ -11,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @ToString
-public class Owner{
+public class
+Owner{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

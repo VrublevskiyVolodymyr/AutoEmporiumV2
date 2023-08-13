@@ -53,21 +53,33 @@ public class Car {
     @JsonView(value = {Views.Level1.class,Views.Level2.class})
     private List<String> photo;
 
-    @JsonIgnore
-    @OneToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH}, fetch = FetchType.EAGER, mappedBy = "car")
-//    @JoinColumn(name = "advertisement_id", referencedColumnName = "id")
+
+    @OneToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "advertisement_id", referencedColumnName = "id")
     private Advertisement advertisement;
 
     @JsonView(value = Views.Level1.class)
     private int createdBySellerId;
 
-    public Car(String producer, String model,  int power) {
+//    public Car(String producer, String model,  int power) {
+//        this.producer = producer;
+//        this.model = model;
+//        this.power = power;
+//    }
+
+    public Car(String producer, String model, int power, int year, String color, int mileage, int numberDoors, int numberSeats, int createdBySellerId) {
         this.producer = producer;
         this.model = model;
         this.power = power;
+        this.year = year;
+        this.color = color;
+        this.mileage = mileage;
+        this.numberDoors = numberDoors;
+        this.numberSeats = numberSeats;
+        this.createdBySellerId = createdBySellerId;
     }
 
-    public Car(String producer, String  model,  int power, int year, String color, int mileage, int numberDoors, int numberSeats) {
+    public Car(String producer, String  model, int power, int year, String color, int mileage, int numberDoors, int numberSeats) {
         this.producer = producer;
         this.model = model;
         this.power = power;

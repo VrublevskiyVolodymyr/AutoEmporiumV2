@@ -1,7 +1,6 @@
 package com.autoemporium.autoemporium.configs;
 
 import com.autoemporium.autoemporium.dao.UserDAO;
-import com.autoemporium.autoemporium.services.CurrencyService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

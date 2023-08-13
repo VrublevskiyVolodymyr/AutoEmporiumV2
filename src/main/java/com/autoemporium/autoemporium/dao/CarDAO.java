@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 public interface CarDAO extends JpaRepository<Car, Integer>, JpaSpecificationExecutor<Car> {
-    @Query("select c from Car c where c.power=:value")
-    List<Car> getCarsByPower(@Param("value") int value);
+    @Query("select c from Car c where c.power=:power")
+    List<Car> getCarsByPower(@Param("power") int power);
 
 //    @Query("select distinct c.producer from Car c")
 //    List<String> findDistinctProducers();

@@ -188,11 +188,11 @@ public class CarService {
         return new ResponseEntity<>("You cannot update this car", HttpStatus.FORBIDDEN);
     }
 
-    public ResponseEntity<List<Car>> getCarsByPower(@PathVariable int value) {
-        return new ResponseEntity<>(carDAO.getCarsByPower(value), HttpStatus.OK);
+    public ResponseEntity<List<Car>> getCarsByPower(int value) {
+        return new ResponseEntity<>(carDAO.findByPower(value), HttpStatus.OK);
     }
 
-    public ResponseEntity<List<Car>> getCarsByProducer(@PathVariable Integer id) {
+    public ResponseEntity<List<Car>> getCarsByProducer(Integer id) {
         String producer = getProducerById(id).getBody();
         return new ResponseEntity<>(carDAO.findByProducer(producer), HttpStatus.OK);
     }

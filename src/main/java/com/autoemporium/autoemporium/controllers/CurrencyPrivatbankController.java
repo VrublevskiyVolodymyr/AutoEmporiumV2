@@ -1,10 +1,8 @@
 package com.autoemporium.autoemporium.controllers;
 
-import com.autoemporium.autoemporium.dao.CurrencyPrivatbankDAO;
 import com.autoemporium.autoemporium.models.CurrencyPrivatbank;
-import com.autoemporium.autoemporium.services.CurrencyService;
+import com.autoemporium.autoemporium.services.financialServices.CurrencyService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

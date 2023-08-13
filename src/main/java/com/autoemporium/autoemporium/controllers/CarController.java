@@ -107,7 +107,6 @@ public class CarController {
     public ResponseEntity<List<Car>> getCarsByPower(@PathVariable int value) {
         return carService.getCarsByPower(value);
 
-//        return carDAO.findByPower(value);
     }
 
     @GetMapping("/cars/producer/{id}")
@@ -116,12 +115,6 @@ public class CarController {
         return carService.getCarsByProducer(id);
     }
 
-
-//    @GetMapping("/cars/models/producer/{id}")
-//    @JsonView(value = Views.Level2.class)
-//    public ResponseEntity<List<String>> getAllModelsByProducer(@PathVariable Integer id) {
-//        return carService.getAllModelsByProducer(id);
-//    }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/cars/saveWithPhotos")

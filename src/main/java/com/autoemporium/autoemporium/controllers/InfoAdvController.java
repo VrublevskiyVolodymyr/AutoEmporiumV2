@@ -1,7 +1,7 @@
 package com.autoemporium.autoemporium.controllers;
 
-import com.autoemporium.autoemporium.services.InfoAdvService;
-import lombok.AllArgsConstructor;
+import com.autoemporium.autoemporium.services.infoService.InfoAdvService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 
 @RestController
-@AllArgsConstructor
 public class InfoAdvController {
-    private InfoAdvService infoAdvService;
+    private final InfoAdvService infoAdvService;
 
-
+    public InfoAdvController(@Qualifier("infoAdvServiceImpl1") InfoAdvService infoAdvService) {
+        this.infoAdvService = infoAdvService;
+    }
 
     @GetMapping("/views/advertisement/{id}/daily-count")
     public ResponseEntity<Integer> getDailyViewCount(@PathVariable int id, Principal principal) {

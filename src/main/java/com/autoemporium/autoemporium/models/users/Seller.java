@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.models.users;
 
-import com.autoemporium.autoemporium.models.Advertisement;
+import com.autoemporium.autoemporium.models.advertisement.Advertisement;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;

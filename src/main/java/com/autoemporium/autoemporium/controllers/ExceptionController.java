@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.controllers;
 
-import jakarta.validation.ConstraintViolationException;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

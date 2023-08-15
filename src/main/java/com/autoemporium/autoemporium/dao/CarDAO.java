@@ -1,8 +1,7 @@
 package com.autoemporium.autoemporium.dao;
 
-import com.autoemporium.autoemporium.models.Car;
+import com.autoemporium.autoemporium.models.cars.Car;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 
 public interface CarDAO extends JpaRepository<Car, Integer>, JpaSpecificationExecutor<Car> {
     @Query("select c from Car c where c.power=:power")

@@ -1,8 +1,9 @@
 package com.autoemporium.autoemporium.controllers;
 
-import com.autoemporium.autoemporium.models.*;
+import com.autoemporium.autoemporium.models.autodealer.*;
 import com.autoemporium.autoemporium.models.users.*;
-import com.autoemporium.autoemporium.services.AutoDealerService;
+import com.autoemporium.autoemporium.services.authService.AuthenticationService;
+import com.autoemporium.autoemporium.services.autodealerService.AutoDealerService;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping("/autodealers")
 public class AutoDealerController {
     private final AutoDealerService autoDealerService;
+    public AuthenticationService authenticationService;
 
     public AutoDealerController(@Qualifier("autoDealerServiceImpl1") AutoDealerService autoDealerService) {
         this.autoDealerService = autoDealerService;
@@ -32,7 +34,7 @@ public class AutoDealerController {
     }
 
     @PostMapping("/admin/{dealerId}/save")
-    public ResponseEntity<String> addAdminToDealer(@PathVariable int dealerId, @RequestBody AdministratorDealerDTO adminDTO) {
+    public ResponseEntity<AuthenticationResponse> addAdminToDealer(@PathVariable int dealerId, @RequestBody AdministratorDealerDTO adminDTO) {
         return autoDealerService.addAdminToDealer(dealerId, adminDTO);
     }
 
@@ -42,7 +44,7 @@ public class AutoDealerController {
     }
 
     @PostMapping("/manager/{dealerId}/save")
-    public ResponseEntity<String> addManagerToDealer(@PathVariable int dealerId, @RequestBody ManagerDealerDTO managerDTO) {
+    public ResponseEntity<AuthenticationResponse> addManagerToDealer(@PathVariable int dealerId, @RequestBody ManagerDealerDTO managerDTO) {
         return autoDealerService.addManagerToDealer(dealerId, managerDTO);
     }
 
@@ -52,7 +54,7 @@ public class AutoDealerController {
     }
 
     @PostMapping("/seller/{dealerId}/save")
-    public ResponseEntity<String> addSellerToDealer(@PathVariable int dealerId, @RequestBody SellerDealerDTO sellerDTO) {
+    public ResponseEntity<AuthenticationResponse> addSellerToDealer(@PathVariable int dealerId, @RequestBody SellerDealerDTO sellerDTO) {
         return autoDealerService.addSellerToDealer(dealerId,sellerDTO);
     }
 
@@ -62,7 +64,7 @@ public class AutoDealerController {
     }
 
     @PostMapping("/mechanic/{dealerId}/save")
-    public ResponseEntity<String> addMechanicToDealer(@PathVariable int dealerId, @RequestBody MechanicDealerDTO mechanicDTO) {
+    public ResponseEntity<AuthenticationResponse> addMechanicToDealer(@PathVariable int dealerId, @RequestBody MechanicDealerDTO mechanicDTO) {
         return autoDealerService.addMechanicToDealer(dealerId,mechanicDTO);
     }
 
@@ -72,7 +74,7 @@ public class AutoDealerController {
     }
 
     @PostMapping("/buyer/{dealerId}/save")
-    public ResponseEntity<String> addBuyerToDealer(@PathVariable int dealerId, @RequestBody BuyerDTO buyerDTO) {
+    public ResponseEntity<AuthenticationResponse> addBuyerToDealer(@PathVariable int dealerId, @RequestBody BuyerDTO buyerDTO) {
         return autoDealerService.addBuyerToDealer(dealerId,buyerDTO);
     }
 

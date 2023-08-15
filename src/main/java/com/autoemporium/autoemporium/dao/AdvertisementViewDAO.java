@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.dao;
 
-import com.autoemporium.autoemporium.models.AdvertisementView;
+import com.autoemporium.autoemporium.models.advertisement.AdvertisementView;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

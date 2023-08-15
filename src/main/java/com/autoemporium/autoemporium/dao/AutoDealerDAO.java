@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.dao;
 
-import com.autoemporium.autoemporium.models.AutoDealer;
+import com.autoemporium.autoemporium.models.autodealer.AutoDealer;
 import com.autoemporium.autoemporium.models.users.Seller;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -2,19 +2,16 @@ package com.autoemporium.autoemporium.controllers;
 
 import com.autoemporium.autoemporium.dao.OwnerDAO;
 import com.autoemporium.autoemporium.dao.SellerDAO;
-import com.autoemporium.autoemporium.models.users.Status;
 import com.autoemporium.autoemporium.models.users.*;
-import com.autoemporium.autoemporium.services.UserService;
+import com.autoemporium.autoemporium.services.userService.UserService;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @AllArgsConstructor
@@ -23,44 +20,6 @@ public class UserController {
     private UserService userService;
     private SellerDAO sellerDAO;
     private OwnerDAO ownerDAO;
-
-
-    @PostMapping("/admin/save")
-    public ResponseEntity<String> saveAdmin(@RequestBody @Valid AdministratorDTO administratorDTO) {
-      return   userService.saveAdmin(administratorDTO);
-    }
-
-    @PostMapping("/owner/save")
-    public ResponseEntity<String> saveOwner(@RequestBody @Valid AdministratorDTO administratorDTO) {
-      return userService.saveOwner(administratorDTO);
-    }
-
-    @PostMapping("/manager/save")
-    public ResponseEntity<String> saveManager(@RequestBody @Valid ManagerDTO managerDTO) {
-        return  userService.saveManager(managerDTO);
-    }
-
-    @PostMapping("/sellers/save")
-    public ResponseEntity<String> saveSeller(@RequestBody @Valid SellerDTO sellerDTO) {
-        return   userService.saveSeller(sellerDTO);
-    }
-
-    @PostMapping("/mechanic/save")
-    public ResponseEntity<String> saveMechanic(@RequestBody @Valid MechanicDTO mechanicDTO) {
-        return   userService.saveMechanic(mechanicDTO);
-    }
-
-
-    @PostMapping("/buyers/save")
-    public ResponseEntity<String> saveBuyer(@RequestBody @Valid BuyerDTO buyerDTO) {
-        return   userService.saveBuyer(buyerDTO);
-    }
-
-
-    @PostMapping("/users/login")
-    public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
-        return userService.login(userDTO);
-    }
 
 
     @PatchMapping("/seller/{id}/status/{statusId}")

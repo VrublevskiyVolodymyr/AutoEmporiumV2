@@ -3,15 +3,15 @@ package com.autoemporium.autoemporium.controllers;
 
 
 import com.autoemporium.autoemporium.dao.CarDAO;
-import com.autoemporium.autoemporium.models.*;
+import com.autoemporium.autoemporium.models.cars.*;
 import com.autoemporium.autoemporium.queryFilters.CarSpecifications;
-import com.autoemporium.autoemporium.services.CarService;
+import com.autoemporium.autoemporium.services.carService.CarService;
 import com.autoemporium.autoemporium.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 //import io.jsonwebtoken.Jwts;
 //import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.authentication.AuthenticationManager;
@@ -28,11 +28,42 @@ import java.security.Principal;
 import java.util.List;
 
 
-@AllArgsConstructor
+
 @Controller
 public class CarController {
-    private CarDAO carDAO;
-    private CarService carService;
+    private final CarService carService;
+
+    public CarController(CarDAO carDAO, @Qualifier("carServiceImpl1") CarService carService) {
+        this.carService = carService;
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/cars")
+    public ResponseEntity<String> save(@RequestBody  @Valid CarDTO carDTO, Principal principal) {
+        return carService.save(carDTO, principal);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/cars/saveWithPhotos")
+    @JsonView(value = Views.Level1.class)
+    public ResponseEntity<String> saveWithPhotos(@RequestParam int producerId, @RequestParam  int modelId, @RequestParam int power,
+                                                 @RequestParam MultipartFile[] photos,    @RequestParam int year, @RequestParam String color, @RequestParam int mileage, @RequestParam int numberDoors, @RequestParam int numberSeats, Principal principal)
+            throws IOException {
+        return carService.saveWithPhotos(producerId ,modelId,  power, photos, year, color,mileage, numberDoors, numberSeats, principal);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/cars/{id}/savePhoto")
+    @JsonView(value = Views.Level1.class)
+    public void savePhotoToCarId(@PathVariable Integer id, @RequestParam MultipartFile[] photos)
+            throws IOException {
+        carService.savePhotoToCarId(id, photos);
+    }
+
+    @PatchMapping("/cars/{id}")
+    public ResponseEntity<String> updateCar(@PathVariable int id, @RequestBody CarDTO carDTO, Principal principal) {
+        return carService.updateCar(id, carDTO, principal);
+    }
 
     @GetMapping("/cars")
     @JsonView(value = Views.Level3.class)
@@ -69,26 +100,25 @@ public class CarController {
     public ResponseEntity<List<Producer>> getAllProducers() {
         return  carService.getAllProducers();
     }
+
     @JsonView(value = Views.Level3.class)
     @GetMapping("/producer/{id}")
     public ResponseEntity<String> getProducerById(@PathVariable Integer id) {
         return  carService.getProducerById(id);
     }
+
     @JsonView(value = Views.Level3.class)
     @GetMapping("/producer/{producerId}/model/{modelId}")
     public ResponseEntity<String> getModelByIdByProducerId(@PathVariable Integer producerId, @PathVariable Integer modelId) {
         return carService.getModelByIdByProducerId(producerId, modelId);
     }
+
     @JsonView(value = Views.Level3.class)
     @GetMapping("/producers/{producerId}/models/all")
     public ResponseEntity<List<Model>> getAllModels(@PathVariable Integer producerId) {
         return  carService.getAllModels(producerId);
     }
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/cars")
-    public ResponseEntity<String> save(@RequestBody  @Valid CarDTO carDTO, Principal principal) {
-       return carService.save(carDTO, principal);
-    }
+
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/cars/{id}")
@@ -96,11 +126,6 @@ public class CarController {
        return carService.deleteCarById(id, principal);
     }
 
-
-    @PatchMapping("/cars/{id}")
-    public ResponseEntity<String> updateCar(@PathVariable int id, @RequestBody CarDTO carDTO, Principal principal) {
-        return carService.updateCar(id, carDTO, principal);
-    }
 
     @GetMapping("/cars/power/{value}")
     @JsonView(value = Views.Level2.class)
@@ -116,28 +141,12 @@ public class CarController {
     }
 
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/cars/saveWithPhotos")
-    @JsonView(value = Views.Level1.class)
-    public ResponseEntity<String> saveWithPhotos(@RequestParam int producerId, @RequestParam  int modelId, @RequestParam int power,
-                              @RequestParam MultipartFile[] photos,    @RequestParam int year, @RequestParam String color, @RequestParam int mileage, @RequestParam int numberDoors, @RequestParam int numberSeats, Principal principal)
-            throws IOException {
-       return carService.saveWithPhotos(producerId ,modelId,  power, photos, year, color,mileage, numberDoors, numberSeats, principal);
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/cars/{id}/savePhoto")
-    @JsonView(value = Views.Level1.class)
-    public void savePhotoToCarId(@PathVariable Integer id, @RequestParam MultipartFile[] photos)
-            throws IOException {
-        carService.savePhotoToCarId(id, photos);
-    }
-
     @JsonView(value = Views.Level3.class)
     @GetMapping("/regions/all")
     public ResponseEntity<List<Region>> getAllRegions() {
         return  carService.getAllRegions();
     }
+
     @JsonView(value = Views.Level3.class)
     @GetMapping("/region/{id}")
     public ResponseEntity<Region> getRegionById(@PathVariable Integer id) {

@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.queryFilters;
 
-import com.autoemporium.autoemporium.models.Car;
+import com.autoemporium.autoemporium.models.cars.Car;
 import org.springframework.data.jpa.domain.Specification;
 
 public class CarSpecifications {

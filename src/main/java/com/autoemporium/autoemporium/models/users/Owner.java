@@ -23,13 +23,13 @@ Owner{
     @JsonView(value = Views.Level1.class)
     private User user;
 
-    private Owner(String username, String password, List<Role> roles,Boolean status) {
-        this.user = new User(username,password,List.of(Role.ADMIN),status);
+    private Owner(String username, String password,String refreshToken, List<Role> roles,Boolean status) {
+        this.user = new User(username,password, refreshToken, List.of(Role.ADMIN),status);
     }
 
-    public static Owner getInstance(String username, String password) {
+    public static Owner getInstance(String username, String password,String refreshToken) {
         if (instance == null) {
-            instance = new Owner(username,password,List.of(Role.ADMIN),true);
+            instance = new Owner(username,password,refreshToken,List.of(Role.ADMIN),true);
         }
             return instance;
     }

@@ -1,9 +1,6 @@
 package com.autoemporium.autoemporium.dao;
 
-import com.autoemporium.autoemporium.models.Advertisement;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import com.autoemporium.autoemporium.models.advertisement.Advertisement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

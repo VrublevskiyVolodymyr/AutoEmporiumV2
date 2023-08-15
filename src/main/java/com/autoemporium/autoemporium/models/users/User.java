@@ -34,6 +34,8 @@ public class User implements UserDetails {
     @JsonView(value = {Views.Level1.class, Views.Level3.class})
     private String password;
 
+    private String refreshToken;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @JsonView(value = Views.Level1.class)
@@ -43,6 +45,13 @@ public class User implements UserDetails {
     private Boolean status;
 
 
+    public User(String username, String password, String refreshToken, List<Role> roles, Boolean status) {
+        this.username = username;
+        this.password = password;
+        this.refreshToken = refreshToken;
+        this.roles = roles;
+        this.status=status;
+    }
     public User(String username, String password, List<Role> roles, Boolean status) {
         this.username = username;
         this.password = password;
@@ -53,6 +62,7 @@ public class User implements UserDetails {
     public User(String username, String password, List<Role> roles) {
         this.username = username;
         this.password = password;
+
         this.roles = roles;
     }
 

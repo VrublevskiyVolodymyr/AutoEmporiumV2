@@ -1,6 +1,6 @@
 package com.autoemporium.autoemporium.dao;
 
-import com.autoemporium.autoemporium.models.CurrencyPrivatbank;
+import com.autoemporium.autoemporium.models.financial.CurrencyPrivatbank;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

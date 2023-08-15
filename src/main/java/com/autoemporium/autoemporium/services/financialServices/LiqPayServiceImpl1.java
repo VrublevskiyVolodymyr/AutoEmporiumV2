@@ -2,10 +2,9 @@ package com.autoemporium.autoemporium.services.financialServices;
 
 import com.autoemporium.autoemporium.dao.PremiumPurchaseDAO;
 import com.autoemporium.autoemporium.dao.SellerDAO;
-import com.autoemporium.autoemporium.models.PremiumPurchase;
+import com.autoemporium.autoemporium.models.financial.PremiumPurchase;
 import com.autoemporium.autoemporium.models.users.AccountType;
 import com.autoemporium.autoemporium.models.users.Seller;
-import com.autoemporium.autoemporium.services.financialServices.LiqPayService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;

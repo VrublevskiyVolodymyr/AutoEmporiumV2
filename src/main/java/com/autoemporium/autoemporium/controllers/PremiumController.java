@@ -17,12 +17,10 @@ public class PremiumController {
         this.liqPayService = liqPayService;
     }
 
-
     @GetMapping("/buy-premium")
     public ResponseEntity<String> buyPremiumAccount( Principal principal) {
         return liqPayService.createPayment(principal);
     }
-
 
     @GetMapping("/confirmation-of-payment/orderId/{orderId}")
     public ResponseEntity<String> getPaymentStatus(@PathVariable String orderId, Principal principal) throws JsonProcessingException {

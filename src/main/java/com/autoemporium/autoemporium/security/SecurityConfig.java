@@ -39,9 +39,8 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
-                                .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/sellers/save", "/buyers/save", "/owner/save", "/users/login", "/liqpay-callback").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/manager/**", "/admin/**", "/mechanic/**", "/autodealers/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.POST,"/api/v1/auth/authenticate","/api/v1/auth/refresh","/api/v1/auth/register/seller","/api/v1/auth/register/buyer","/api/v1/auth/register/owner", "/liqpay-callback").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register/manager","/api/v1/auth/register/admin","/api/v1/auth/register/mechanic","/manager/**", "/admin/**", "/mechanic/**", "/autodealers/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/sellers/**", "/buyers/**", "/buyer/**", "/users/**", "/user/**", "/mechanics/**", "/autodealers/**").hasAnyAuthority("MANAGER", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/cars/**", "/views/**", "/average-price/**", "/buy-premium", "/confirmation-of-payment/**").hasAnyAuthority("SELLER", "MANAGER", "ADMIN", "DEALER_ADMIN", "DEALER_MANAGER", "DEALER_SELLER")
                                 .requestMatchers(HttpMethod.GET, "/cars/all").hasAnyAuthority("MANAGER", "ADMIN")

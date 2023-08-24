@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.autoemporium</groupId>
-    <artifactId>AutoEmporium</artifactId>
+    <artifactId>AutoEmporiumV2</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>AutoEmporium</name>
-    <description>AutoEmporium</description>
+    <name>AutoEmporiumV2</name>
+    <description>AutoEmporiumV2</description>
     <properties>
         <java.version>17</java.version>
     </properties>

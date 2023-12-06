@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+     - "5679:8080"
+    volumes:
+      - ./volumes/backend:/app
+      - ./volumes/foto:/root/images
+    restart: on-failure
+    command: >
+      sh -c "/wait-for-it.sh db:3306 -- java -jar app.jar"
+
+  db:
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=autoEmporium
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user
+      - MYSQL_ROOT_PASSWORD=superpassword
+    volumes:
+      - ./volumes/mysql:/var/lib/mysql
+    ports:
+      - "3304:3306"
+    restart: on-failure
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./volumes/client:/usr/share/nginx/html
+      - ./volumes/nginx.conf:/etc/nginx/conf.d/default.conf
